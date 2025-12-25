@@ -4,6 +4,7 @@ namespace App\Application\Controller\Products;
 
 use App\Application\Helpers\ApiResponse;
 use App\Application\Port\Output\Repositories\ProductRepositoryPort;
+use App\Application\Presenters\Products\ProductPresenter;
 use App\Application\UseCases\Products\CreateProductUseCase;
 use App\Domain\Products\DTO\CreateProductDto;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -101,7 +102,7 @@ class ProductController extends AbstractController
 
             $product = $useCase->execute($dto);
 
-            return ApiResponse::success($product->toArray());
+            return ApiResponse::success(ProductPresenter::toResponse($product));
         } catch (\Throwable $e) {
             return ApiResponse::error('Internal server error: ' . $e->getMessage());
         }
