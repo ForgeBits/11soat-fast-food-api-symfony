@@ -2,10 +2,10 @@
 
 namespace App\Infrastructure\Database\Repositories\Products;
 
+use App\Application\Domain\Dtos\Products\CreateProductDto;
+use App\Application\Domain\Dtos\Products\UpdateProductDto;
+use App\Application\Domain\Entities\Products\Entity\Product;
 use App\Application\Port\Output\Repositories\ProductRepositoryPort;
-use App\Domain\Products\DTO\CreateProductDto;
-use App\Domain\Products\DTO\UpdateProductDto;
-use App\Domain\Products\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

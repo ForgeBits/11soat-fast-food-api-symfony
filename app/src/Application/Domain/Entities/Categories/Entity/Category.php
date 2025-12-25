@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Domain\Categories\Entity;
+namespace App\Application\Domain\Entities\Categories\Entity;
 
-use App\Domain\Categories\Repository\CategoryRepository;
+use App\Domain\Entities\Categories\Repository\CategoryRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]

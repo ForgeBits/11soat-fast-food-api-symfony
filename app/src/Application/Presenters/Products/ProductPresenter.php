@@ -2,7 +2,7 @@
 
 namespace App\Application\Presenters\Products;
 
-use App\Domain\Products\Entity\Product;
+use App\Application\Domain\Entities\Products\Entity\Product;
 
 class ProductPresenter
 {

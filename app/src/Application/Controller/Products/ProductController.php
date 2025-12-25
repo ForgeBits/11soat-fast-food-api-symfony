@@ -2,15 +2,16 @@
 
 namespace App\Application\Controller\Products;
 
+use App\Application\Domain\Dtos\Products\CreateProductDto;
+use App\Application\Domain\Dtos\Products\UpdateProductDto;
 use App\Application\Helpers\ApiResponse;
 use App\Application\Port\Output\Repositories\CategoryRepositoryPort;
 use App\Application\Port\Output\Repositories\ProductRepositoryPort;
 use App\Application\Presenters\Products\ProductPresenter;
 use App\Application\UseCases\Products\CreateProductUseCase;
 use App\Application\UseCases\Products\UpdateProductUseCase;
-use App\Domain\Products\DTO\CreateProductDto;
-use App\Domain\Products\DTO\UpdateProductDto;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +19,6 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use OpenApi\Attributes as OA;
 
 #[Route('/api/products')]
 class ProductController extends AbstractController
@@ -118,7 +118,7 @@ class ProductController extends AbstractController
     }
 
     #[Route('', methods: ['GET'])]
-    public function paginate(Request $req): JsonResponse
+    public function findAll(Request $req): JsonResponse
     {
         try {
             /*$page = max(1, (int) $req->query->get('page', 1));

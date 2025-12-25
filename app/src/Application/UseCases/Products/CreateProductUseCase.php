@@ -2,10 +2,10 @@
 
 namespace App\Application\UseCases\Products;
 
+use App\Application\Domain\Dtos\Products\CreateProductDto;
+use App\Application\Domain\Entities\Products\Entity\Product;
 use App\Application\Port\Output\Repositories\CategoryRepositoryPort;
 use App\Application\Port\Output\Repositories\ProductRepositoryPort;
-use App\Domain\Products\DTO\CreateProductDto;
-use App\Domain\Products\Entity\Product;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 

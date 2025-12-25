@@ -2,8 +2,8 @@
 
 namespace App\Application\Port\Output\Repositories;
 
-use App\Domain\Categories\DTO\CreateCategoryDto;
-use App\Domain\Categories\Entity\Category;
+use App\Application\Domain\Dtos\Categories\CreateCategoryDto;
+use App\Application\Domain\Entities\Categories\Entity\Category;
 
 interface CategoryRepositoryPort
 {

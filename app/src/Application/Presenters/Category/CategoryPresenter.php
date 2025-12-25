@@ -2,7 +2,8 @@
 
 namespace App\Application\Presenters\Category;
 
-use App\Domain\Categories\Entity\Category;
+
+use App\Application\Domain\Entities\Categories\Entity\Category;
 
 class CategoryPresenter
 {

@@ -2,9 +2,9 @@
 
 namespace App\Application\Port\Output\Repositories;
 
-use App\Domain\Products\DTO\CreateProductDto;
-use App\Domain\Products\DTO\UpdateProductDto;
-use App\Domain\Products\Entity\Product;
+use App\Application\Domain\Dtos\Products\CreateProductDto;
+use App\Application\Domain\Dtos\Products\UpdateProductDto;
+use App\Application\Domain\Entities\Products\Entity\Product;
 
 interface ProductRepositoryPort
 {

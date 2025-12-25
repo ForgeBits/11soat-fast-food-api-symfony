@@ -21,14 +21,14 @@ doctrine:
             Products:
                 is_bundle: false
                 type: attribute
-                dir: '%kernel.project_dir%/src/Domain/Products/Entity'
-                prefix: 'App\Domain\Products\Entity'
+                dir: '%kernel.project_dir%/src/Application/Domain/Entities/Products/Entity'
+                prefix: 'App\Application\Domain\Entities\Products\Entity'
                 alias: Products
             Categories:
                 is_bundle: false
                 type: attribute
-                dir: '%kernel.project_dir%/src/Domain/Categories/Entity'
-                prefix: 'App\Domain\Categories\Entity'
+                dir: '%kernel.project_dir%/src/Application/Domain/Entities/Categories/Entity'
+                prefix: 'App\Application\Domain\Entities\Categories\Entity'
                 alias: Categories
         controller_resolver:
             auto_mapping: false
