@@ -4,6 +4,7 @@ namespace App\Infrastructure\Database\Repositories\Products;
 
 use App\Application\Port\Output\Repositories\ProductRepositoryPort;
 use App\Domain\Products\DTO\CreateProductDto;
+use App\Domain\Products\DTO\UpdateProductDto;
 use App\Domain\Products\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -28,6 +29,32 @@ class ProductRepository extends ServiceEntityRepository implements ProductReposi
 
         $this->registry->getManager()->persist($product);
         $this->registry->getManager()->flush();
+
+        return $product;
+    }
+
+    public function update(UpdateProductDto $dto): Product
+    {
+        /** @var Product $product */
+        $product = $this->find($dto->id);
+
+        $product->setName($dto->name);
+        $product->setDescription($dto->description);
+        $product->setAmount($dto->amount);
+        $product->setUrlImg($dto->url_img);
+        $product->setCustomizable($dto->customizable);
+        $product->setAvailable($dto->available);
+
+        $this->registry->getManager()->persist($product);
+        $this->registry->getManager()->flush();
+
+        return $product;
+    }
+
+    public function findByName(string $name): ?Product
+    {
+        /** @var Product $product */
+        $product =  $this->findOneBy(['name' => $name]);
 
         return $product;
     }
