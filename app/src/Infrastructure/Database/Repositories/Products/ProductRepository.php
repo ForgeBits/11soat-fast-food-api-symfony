@@ -33,6 +33,11 @@ class ProductRepository extends ServiceEntityRepository implements ProductReposi
         return $product;
     }
 
+    public function paginate(array $filters, int $page, int $perPage)
+    {
+        // TODO: Implement paginate() method.
+    }
+
     public function update(UpdateProductDto $dto): Product
     {
         /** @var Product $product */

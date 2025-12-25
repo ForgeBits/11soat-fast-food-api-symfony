@@ -111,10 +111,4 @@ class CategoriesController extends AbstractController
             return ApiResponse::error('Internal server error: ' . $e->getMessage());
         }
     }
-
-    #[Route('', methods: ['PATCH'])]
-    public function update(Request $req): JsonResponse
-    {
-        return $this->json(['message' => 'Not implemented'], 501);
-    }
 }
