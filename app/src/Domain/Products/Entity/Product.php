@@ -46,7 +46,6 @@ class Product
         $this->updatedAt = new \DateTime();
     }
 
-    // getters / setters
     public function getId(): ?int { return $this->id; }
 
     public function getName(): string { return $this->name; }
@@ -77,4 +76,20 @@ class Product
     public function getUpdatedAt(): \DateTime { return $this->updatedAt; }
 
     public function touch(): void { $this->updatedAt = new \DateTime(); }
+
+    public function toArray(): array
+    {
+        return [
+            'id'            => $this->getId(),
+            'name'          => $this->getName(),
+            'description'   => $this->getDescription(),
+            'amount'        => $this->getAmount(),
+            'url_img'       => $this->getUrlImg(),
+            'customizable'  => $this->isCustomizable(),
+            'available'     => $this->isAvailable(),
+            'category_id'   => $this->getCategoryId(),
+            'created_at'    => $this->getCreatedAt()->format('Y-m-d H:i:s'),
+            'updated_at'    => $this->getUpdatedAt()->format('Y-m-d H:i:s'),
+        ];
+    }
 }

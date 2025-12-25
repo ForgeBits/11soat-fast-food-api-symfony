@@ -18,7 +18,6 @@ class ProductRepository extends ServiceEntityRepository implements ProductReposi
 
     public function create(CreateProductDto $dto): Product
     {
-        dd($dto->name);
         $product = new Product();
         $product->setName($dto->name);
         $product->setDescription($dto->description);
