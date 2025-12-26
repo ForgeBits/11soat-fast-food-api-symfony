@@ -13,8 +13,8 @@ use App\Application\Presenters\Products\PaginatorProductPresenter;
 use App\Application\Presenters\Products\ProductPresenter;
 use App\Application\UseCases\Products\CreateProductUseCase;
 use App\Application\UseCases\Products\FindAllProductsUseCase;
+use App\Application\UseCases\Products\FindProductUseCase;
 use App\Application\UseCases\Products\UpdateProductUseCase;
-use Doctrine\ORM\Tools\Pagination\Paginator;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -122,6 +122,66 @@ class ProductController extends AbstractController
     }
 
     #[Route('', methods: ['GET'])]
+    #[OA\Get(
+        path: '/api/products',
+        summary: 'Lista produtos com paginação',
+        tags: ['Products'],
+        parameters: [
+            new OA\Parameter(name: 'page', description: 'Número da página', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 1, minimum: 1)),
+            new OA\Parameter(name: 'perPage', description: 'Itens por página (legacy)', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 10, minimum: 1, maximum: 100)),
+            new OA\Parameter(name: 'limit', description: 'Quantidade de itens retornados', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 10, minimum: 1, maximum: 100)),
+            new OA\Parameter(name: 'orderBy', description: 'Campo para ordenação', in: 'query', required: false, schema: new OA\Schema(type: 'string', default: 'id')),
+            new OA\Parameter(name: 'orderDirection', description: 'Direção da ordenação', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['ASC', 'DESC'], default: 'ASC'))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Lista paginada de produtos',
+                content: new OA\MediaType(
+                    mediaType: 'application/json',
+                    schema: new OA\Schema(
+                        properties: [
+                            new OA\Property(property: 'success', type: 'boolean', example: true),
+                            new OA\Property(
+                                property: 'data',
+                                properties: [
+                                    new OA\Property(
+                                        property: 'items',
+                                        type: 'array',
+                                        items: new OA\Items(
+                                            properties: [
+                                                new OA\Property(property: 'id', type: 'integer', example: 101),
+                                                new OA\Property(property: 'name', type: 'string', example: 'X-Burger'),
+                                                new OA\Property(property: 'description', type: 'string', example: 'Hambúrguer com queijo', nullable: true),
+                                                new OA\Property(property: 'amount', type: 'number', format: 'float', example: 29.9),
+                                                new OA\Property(property: 'url_img', type: 'string', example: 'https://cdn.example.com/produtos/x-burger.jpg'),
+                                                new OA\Property(property: 'customizable', type: 'boolean', example: true),
+                                                new OA\Property(property: 'available', type: 'boolean', example: true),
+                                                new OA\Property(property: 'category_id', type: 'integer', example: 3, nullable: true)
+                                            ],
+                                            type: 'object'
+                                        )
+                                    ),
+                                    new OA\Property(
+                                        property: 'meta',
+                                        properties: [
+                                            new OA\Property(property: 'page', type: 'integer', example: 1),
+                                            new OA\Property(property: 'limit', type: 'integer', example: 10),
+                                            new OA\Property(property: 'total', type: 'integer', example: 2)
+                                        ],
+                                        type: 'object'
+                                    )
+                                ],
+                                type: 'object'
+                            )
+                        ],
+                        type: 'object'
+                    )
+                )
+            ),
+            new OA\Response(response: 500, description: 'Erro interno do servidor')
+        ]
+    )]
     public function findAll(Request $req): JsonResponse
     {
         try {
@@ -135,6 +195,26 @@ class ProductController extends AbstractController
             }, $result);
 
             return ApiResponse::success(PaginatorProductPresenter::toResponse($pagination, $items));
+        } catch (\Throwable $e) {
+            return ApiResponse::error('Internal server error: ' . $e->getMessage());
+        }
+    }
+
+    #[Route('/{id}', methods: ['GET'])]
+    public function find(Request $req): JsonResponse
+    {
+        try {
+            $id = (int)$req->attributes->get('id');
+            $useCase = new FindProductUseCase($this->productRepository);
+
+            $product = $useCase->execute($id);
+
+            return ApiResponse::success(ProductPresenter::toResponse($product));
+        } catch (NotFoundHttpException $e) {
+            return ApiResponse::error(
+                message: $e->getMessage(),
+                code: 404
+            );
         } catch (\Throwable $e) {
             return ApiResponse::error('Internal server error: ' . $e->getMessage());
         }

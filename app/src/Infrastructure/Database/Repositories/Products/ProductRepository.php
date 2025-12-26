@@ -64,6 +64,14 @@ class ProductRepository extends ServiceEntityRepository implements ProductReposi
         return $product;
     }
 
+    public function findById(int $id): ?Product
+    {
+        /** @var Product $product */
+        $product =  $this->find($id);
+
+        return $product;
+    }
+
     public function findAllPaginated(array $filters, int $page, int $perPage)
     {
          return $this->createQueryBuilder('p')

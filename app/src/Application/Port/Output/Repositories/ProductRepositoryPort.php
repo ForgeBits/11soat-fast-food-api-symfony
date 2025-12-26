@@ -12,4 +12,5 @@ interface ProductRepositoryPort
     public function findAllPaginated(array $filters, int $page, int $perPage);
     public function update(UpdateProductDto $dto): Product;
     public function findByName(string $name): ?Product;
+    public function findById(int $id): ?Product;
 }
