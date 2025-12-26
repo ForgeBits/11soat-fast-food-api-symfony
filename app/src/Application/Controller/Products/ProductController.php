@@ -201,6 +201,51 @@ class ProductController extends AbstractController
     }
 
     #[Route('/{id}', methods: ['GET'])]
+    #[OA\Get(
+        path: '/api/products/{id}',
+        summary: 'Obtém um produto pelo ID',
+        tags: ['Products'],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                description: 'ID do produto',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer'),
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Produto encontrado com sucesso',
+                content: new OA\MediaType(
+                    mediaType: 'application/json',
+                    schema: new OA\Schema(
+                        properties: [
+                            new OA\Property(property: 'success', type: 'boolean', example: true),
+                            new OA\Property(
+                                property: 'data',
+                                properties: [
+                                    new OA\Property(property: 'id', type: 'integer', example: 101),
+                                    new OA\Property(property: 'name', type: 'string', example: 'X-Burger'),
+                                    new OA\Property(property: 'description', type: 'string', example: 'Hambúrguer com queijo', nullable: true),
+                                    new OA\Property(property: 'amount', type: 'number', format: 'float', example: 29.9),
+                                    new OA\Property(property: 'url_img', type: 'string', example: 'https://cdn.example.com/produtos/x-burger.jpg'),
+                                    new OA\Property(property: 'customizable', type: 'boolean', example: true),
+                                    new OA\Property(property: 'available', type: 'boolean', example: true),
+                                    new OA\Property(property: 'category_id', type: 'integer', example: 3, nullable: true)
+                                ],
+                                type: 'object'
+                            )
+                        ],
+                        type: 'object'
+                    )
+                )
+            ),
+            new OA\Response(response: 404, description: 'Produto não encontrado'),
+            new OA\Response(response: 500, description: 'Erro interno do servidor')
+        ]
+    )]
     public function find(Request $req): JsonResponse
     {
         try {
