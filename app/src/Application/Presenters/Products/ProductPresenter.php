@@ -3,6 +3,7 @@
 namespace App\Application\Presenters\Products;
 
 use App\Application\Domain\Entities\Products\Entity\Product;
+use App\Application\Presenters\Category\CategoryPresenter;
 
 class ProductPresenter
 {
@@ -16,7 +17,7 @@ class ProductPresenter
             'url_img' => $product->getUrlImg(),
             'customizable' => $product->isCustomizable(),
             'available' => $product->isAvailable(),
-            'category_id' => $product->getCategoryId(),
+            'category' => CategoryPresenter::toResponse($product->getCategory()),
             'created_at' => $product->getCreatedAt()->format('Y-m-d H:i:s'),
             'updated_at' => $product->getUpdatedAt()->format('Y-m-d H:i:s'),
         ];

@@ -1,8 +1,9 @@
 <?php
 namespace App\Application\Domain\Entities\Products\Entity;
 
+use App\Application\Domain\Entities\Categories\Entity\Category;
+use App\Infrastructure\Database\Repositories\Products\ProductRepository;
 use Doctrine\ORM\Mapping as ORM;
-use App\Application\Domain\Entities\Products\Repository\ProductRepository;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[ORM\Table(name: 'products')]
@@ -31,8 +32,9 @@ class Product
     #[ORM\Column(type:'boolean')]
     private bool $available = true;
 
-    #[ORM\Column(type:'integer', nullable:true)]
-    private ?int $categoryId = null;
+    #[ORM\ManyToOne(targetEntity: Category::class)]
+    #[ORM\JoinColumn(name: 'category_id', referencedColumnName: 'id', nullable: false)]
+    private ?Category $category = null;
 
     #[ORM\Column(type:'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
@@ -69,8 +71,8 @@ class Product
     public function isAvailable(): bool { return $this->available; }
     public function setAvailable(bool $available): self { $this->available = $available; return $this; }
 
-    public function getCategoryId(): ?int { return $this->categoryId; }
-    public function setCategoryId(?int $categoryId): self { $this->categoryId = $categoryId; return $this; }
+    public function getCategory(): ?Category { return $this->category; }
+    public function setCategory(?Category $category): self { $this->category = $category; return $this; }
 
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
     public function getUpdatedAt(): \DateTime { return $this->updatedAt; }
@@ -87,7 +89,7 @@ class Product
             'url_img'       => $this->getUrlImg(),
             'customizable'  => $this->isCustomizable(),
             'available'     => $this->isAvailable(),
-            'category_id'   => $this->getCategoryId(),
+            'category_id'   => $this->getCategory()?->getId(),
             'created_at'    => $this->getCreatedAt()->format('Y-m-d H:i:s'),
             'updated_at'    => $this->getUpdatedAt()->format('Y-m-d H:i:s'),
         ];
