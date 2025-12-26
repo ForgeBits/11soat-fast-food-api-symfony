@@ -63,4 +63,13 @@ class ProductRepository extends ServiceEntityRepository implements ProductReposi
 
         return $product;
     }
+
+    public function findAllPaginated(array $filters, int $page, int $perPage)
+    {
+         return $this->createQueryBuilder('p')
+            ->setFirstResult(($page - 1) * $perPage)
+            ->setMaxResults($perPage)
+            ->getQuery()
+            ->getResult();
+    }
 }

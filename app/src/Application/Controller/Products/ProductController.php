@@ -2,13 +2,17 @@
 
 namespace App\Application\Controller\Products;
 
+use App\Application\Domain\Dtos\Commons\PaginationQueryDto;
 use App\Application\Domain\Dtos\Products\CreateProductDto;
 use App\Application\Domain\Dtos\Products\UpdateProductDto;
+use App\Application\Domain\Entities\Products\Entity\Product;
 use App\Application\Helpers\ApiResponse;
 use App\Application\Port\Output\Repositories\CategoryRepositoryPort;
 use App\Application\Port\Output\Repositories\ProductRepositoryPort;
+use App\Application\Presenters\Products\PaginatorProductPresenter;
 use App\Application\Presenters\Products\ProductPresenter;
 use App\Application\UseCases\Products\CreateProductUseCase;
+use App\Application\UseCases\Products\FindAllProductsUseCase;
 use App\Application\UseCases\Products\UpdateProductUseCase;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use OpenApi\Attributes as OA;
@@ -121,31 +125,16 @@ class ProductController extends AbstractController
     public function findAll(Request $req): JsonResponse
     {
         try {
-            /*$page = max(1, (int) $req->query->get('page', 1));
-            $limit = (int) $req->query->get('limit', 10);
-            $limit = min(max($limit, 1), 100);
-            $offset = ($page - 1) * $limit;*/
+            $pagination = PaginationQueryDto::fromRequest($req);
+            $useCase = new FindAllProductsUseCase($this->productRepository);
 
-            $qb = $this->productRepository->createPaginatedQueryBuilder(); // returns QueryBuilder
-            $qb->setFirstResult($offset)->setMaxResults($limit);
+            $result = $useCase->execute($pagination);
 
-            $paginator = new Paginator($qb->getQuery(), true);
-            $total = count($paginator);
+            $items = array_map(function (Product $product) {
+                return ProductPresenter::toResponse($product);
+            }, $result);
 
-            $items = [];
-            foreach ($paginator as $product) {
-                $items[] = ProductPresenter::toResponse($product);
-            }
-
-            return ApiResponse::success([
-                'items' => $items,
-                'meta' => [
-                    'page' => $page,
-                    'limit' => $limit,
-                    'total' => $total,
-                    'pages' => (int) ceil($total / $limit),
-                ],
-            ]);
+            return ApiResponse::success(PaginatorProductPresenter::toResponse($pagination, $items));
         } catch (\Throwable $e) {
             return ApiResponse::error('Internal server error: ' . $e->getMessage());
         }
