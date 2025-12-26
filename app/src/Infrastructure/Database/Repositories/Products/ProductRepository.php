@@ -80,4 +80,10 @@ class ProductRepository extends ServiceEntityRepository implements ProductReposi
             ->getQuery()
             ->getResult();
     }
+
+    public function delete(Product $product): void
+    {
+        $this->registry->getManager()->remove($product);
+        $this->registry->getManager()->flush();
+    }
 }

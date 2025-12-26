@@ -12,6 +12,7 @@ use App\Application\Port\Output\Repositories\ProductRepositoryPort;
 use App\Application\Presenters\Products\PaginatorProductPresenter;
 use App\Application\Presenters\Products\ProductPresenter;
 use App\Application\UseCases\Products\CreateProductUseCase;
+use App\Application\UseCases\Products\DeleteProductUseCase;
 use App\Application\UseCases\Products\FindAllProductsUseCase;
 use App\Application\UseCases\Products\FindProductUseCase;
 use App\Application\UseCases\Products\UpdateProductUseCase;
@@ -359,6 +360,53 @@ class ProductController extends AbstractController
             return ApiResponse::success(ProductPresenter::toResponse($product));
         } catch (NotFoundHttpException|ConflictHttpException $e) {
             return ApiResponse::error($e->getMessage());
+        } catch (\Throwable $e) {
+            return ApiResponse::error('Internal server error: ' . $e->getMessage());
+        }
+    }
+
+    #[Route('/{id}', methods: ['DELETE'])]
+    #[OA\Delete(
+        path: '/api/products/{id}',
+        summary: 'Remove um produto pelo ID',
+        tags: ['Products'],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                description: 'ID do produto',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer'),
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Produto removido com sucesso',
+                content: new OA\MediaType(
+                    mediaType: 'application/json',
+                    schema: new OA\Schema(
+                        properties: [
+                            new OA\Property(property: 'success', type: 'boolean', example: true),
+                            new OA\Property(property: 'message', type: 'string', example: 'Product deleted successfully')
+                        ],
+                        type: 'object'
+                    )
+                )
+            ),
+            new OA\Response(response: 404, description: 'Produto não encontrado'),
+            new OA\Response(response: 500, description: 'Erro interno do servidor')
+        ]
+    )]
+    public function delete(Request $req): JsonResponse
+    {
+        try {
+            $id = (int)$req->attributes->get('id');
+            $useCase = new DeleteProductUseCase($this->productRepository);
+
+            $useCase->execute($id);
+
+            return ApiResponse::success(message: 'Product deleted successfully');
         } catch (\Throwable $e) {
             return ApiResponse::error('Internal server error: ' . $e->getMessage());
         }
