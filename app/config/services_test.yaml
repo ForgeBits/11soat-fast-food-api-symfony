@@ -1,0 +1,9 @@
+services:
+  App\Infrastructure\Test\Doubles\InMemoryProductRepository:
+    public: true
+
+  App\Infrastructure\Test\Doubles\InMemoryCategoryRepository:
+    public: true
+
+  App\Application\Port\Output\Repositories\ProductRepositoryPort: '@App\Infrastructure\Test\Doubles\InMemoryProductRepository'
+  App\Application\Port\Output\Repositories\CategoryRepositoryPort: '@App\Infrastructure\Test\Doubles\InMemoryCategoryRepository'

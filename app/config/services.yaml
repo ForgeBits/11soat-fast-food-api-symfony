@@ -22,3 +22,7 @@ services:
     App\Application\Controller\:
         resource: '../src/Application/Controller/'
         tags: ['controller.service_arguments']
+
+    # Interface to implementation aliases (default envs)
+    App\Application\Port\Output\Repositories\ProductRepositoryPort: '@App\Infrastructure\Database\Repositories\Products\ProductRepository'
+    App\Application\Port\Output\Repositories\CategoryRepositoryPort: '@App\Infrastructure\Database\Repositories\Products\CategoryRepository'
