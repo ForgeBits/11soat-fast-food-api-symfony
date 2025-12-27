@@ -2,13 +2,13 @@
 
 namespace App\Application\UseCases\Products;
 
-use App\Application\Port\Output\Repositories\ProductRepositoryPort;
+use App\Application\Port\Output\Repositories\CategoryRepositoryPort;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 readonly class DeleteProductUseCase
 {
     public function __construct(
-        public ProductRepositoryPort $productRepository,
+        public CategoryRepositoryPort $productRepository,
     ) {
 
     }

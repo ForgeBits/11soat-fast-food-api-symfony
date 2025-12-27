@@ -9,7 +9,7 @@ use App\Application\Domain\Entities\Products\Entity\Product;
 use App\Application\Helpers\ApiResponse;
 use App\Application\Port\Output\Repositories\CategoryRepositoryPort;
 use App\Application\Port\Output\Repositories\ProductRepositoryPort;
-use App\Application\Presenters\Products\PaginatorProductPresenter;
+use App\Application\Presenters\Commons\PaginatorPresenter;
 use App\Application\Presenters\Products\ProductPresenter;
 use App\Application\UseCases\Products\CreateProductUseCase;
 use App\Application\UseCases\Products\DeleteProductUseCase;
@@ -215,7 +215,7 @@ class ProductController extends AbstractController
                 return ProductPresenter::toResponse($product);
             }, $result);
 
-            return ApiResponse::success(PaginatorProductPresenter::toResponse($pagination, $items));
+            return ApiResponse::success(PaginatorPresenter::toResponse($pagination, $items));
         } catch (\Throwable $e) {
             return ApiResponse::error('Internal server error: ' . $e->getMessage());
         }

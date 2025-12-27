@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Database\Repositories\Products;
 
 use App\Application\Domain\Dtos\Categories\CreateCategoryDto;
+use App\Application\Domain\Dtos\Categories\UpdateCategoryDto;
 use App\Application\Domain\Entities\Categories\Entity\Category;
 use App\Application\Port\Output\Repositories\CategoryRepositoryPort;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -28,6 +29,20 @@ class CategoryRepository extends ServiceEntityRepository implements CategoryRepo
         return $category;
     }
 
+    public function update(UpdateCategoryDto $dto): Category
+    {
+        /** @var Category $category */
+        $category = $this->find($dto->id);
+
+        $category->setName($dto->name);
+        $category->setDescription($dto->description);
+
+        $this->registry->getManager()->persist($category);
+        $this->registry->getManager()->flush();
+
+        return $category;
+    }
+
     public function findById(int $id): ?Category
     {
         /** @var Category $category */
@@ -42,5 +57,20 @@ class CategoryRepository extends ServiceEntityRepository implements CategoryRepo
         $category = $this->findOneBy(['name' => $name]);
 
         return $category;
+    }
+
+    public function findAllPaginated(array $filters, int $page, int $perPage): array
+    {
+        return $this->createQueryBuilder('c')
+            ->setFirstResult(($page - 1) * $perPage)
+            ->setMaxResults($perPage)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function delete(Category $category): void
+    {
+        $this->registry->getManager()->remove($category);
+        $this->registry->getManager()->flush();
     }
 }

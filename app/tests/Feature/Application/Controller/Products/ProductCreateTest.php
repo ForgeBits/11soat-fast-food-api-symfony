@@ -27,10 +27,9 @@ class ProductCreateTest extends WebTestCase
 
     public function test_create_success(): void
     {
-        // Seed category id 1
         $category = new Category();
         $category->setName('Lanches');
-        $this->categoryRepo->seed($category); // id will be 1
+        $this->categoryRepo->seed($category);
 
         $payload = [
             'name' => 'X-Burger',
@@ -53,7 +52,6 @@ class ProductCreateTest extends WebTestCase
     public function test_create_validation_error_returns_400(): void
     {
         $payload = [
-            // 'name' omitted to trigger NotBlank
             'amount' => 10,
             'url_img' => 'invalid-url',
         ];
@@ -78,12 +76,10 @@ class ProductCreateTest extends WebTestCase
             'category_id' => 1,
         ];
 
-        // seed a category so repository can set category reference
         $category = new Category();
         $category->setName('Lanches');
         $this->categoryRepo->seed($category); // id 1
 
-        // Use repository create to add item
         $dto = new \App\Application\Domain\Dtos\Products\CreateProductDto();
         $dto->name = $existingPayload['name'];
         $dto->description = $existingPayload['description'];
@@ -121,7 +117,7 @@ class ProductCreateTest extends WebTestCase
             'url_img' => 'https://example.com/xs.jpg',
             'customizable' => false,
             'available' => true,
-            'category_id' => 999, // not seeded
+            'category_id' => 999,
         ];
 
         $this->client->request('POST', '/api/products', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));

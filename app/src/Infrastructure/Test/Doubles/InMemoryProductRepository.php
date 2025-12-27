@@ -61,7 +61,7 @@ class InMemoryProductRepository implements ProductRepositoryPort
         return $product;
     }
 
-    public function findAllPaginated(array $filters, int $page, int $perPage)
+    public function findAllPaginated(array $filters, int $page, int $perPage): array
     {
         return array_values($this->items);
     }
@@ -96,5 +96,13 @@ class InMemoryProductRepository implements ProductRepositoryPort
     public function findById(int $id): ?Product
     {
         return $this->items[$id] ?? null;
+    }
+
+    public function delete(Product $product): void
+    {
+        $id = $product->getId();
+        if ($id !== null && isset($this->items[$id])) {
+            unset($this->items[$id]);
+        }
     }
 }

@@ -79,7 +79,7 @@ class ProductRepository extends ServiceEntityRepository implements ProductReposi
             ->getOneOrNullResult();
     }
 
-    public function findAllPaginated(array $filters, int $page, int $perPage)
+    public function findAllPaginated(array $filters, int $page, int $perPage): array
     {
          return $this->createQueryBuilder('p')
             ->innerJoin('p.category', 'c')

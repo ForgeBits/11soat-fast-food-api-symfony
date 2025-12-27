@@ -2,9 +2,9 @@
 
 namespace App\Application\UseCases\Categories;
 
+use App\Application\Domain\Dtos\Categories\CreateCategoryDto;
+use App\Application\Domain\Entities\Categories\Entity\Category;
 use App\Application\Port\Output\Repositories\CategoryRepositoryPort;
-use App\Domain\Categories\DTO\CreateCategoryDto;
-use App\Domain\Categories\Entity\Category;
 
 readonly class CreateCategoryUseCase
 {

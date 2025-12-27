@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Test\Doubles;
 
 use App\Application\Domain\Dtos\Categories\CreateCategoryDto;
+use App\Application\Domain\Dtos\Categories\UpdateCategoryDto;
 use App\Application\Domain\Entities\Categories\Entity\Category;
 use App\Application\Port\Output\Repositories\CategoryRepositoryPort;
 
@@ -54,5 +55,20 @@ class InMemoryCategoryRepository implements CategoryRepositoryPort
             }
         }
         return null;
+    }
+
+    public function findAllPaginated(array $filters, int $page, int $perPage): array
+    {
+        return array_values($this->items);
+    }
+
+    public function update(UpdateCategoryDto $dto): Category
+    {
+        // TODO: Implement update() method.
+    }
+
+    public function delete(Category $category): void
+    {
+        // TODO: Implement delete() method.
     }
 }

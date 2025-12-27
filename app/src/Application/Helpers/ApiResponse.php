@@ -13,7 +13,7 @@ class ApiResponse
             'code'    => 200,
             'message' => $message,
             'data'    => $data,
-        ]);
+        ], $code);
     }
 
     public static function warning(string $message, int $code = 400): JsonResponse
@@ -22,7 +22,7 @@ class ApiResponse
             'status'  => 'warning',
             'message' => $message,
             'code'    => $code,
-        ]);
+        ], $code);
     }
 
     public static function error(string $message, array $errors = [], int $code = 500): JsonResponse
@@ -32,6 +32,6 @@ class ApiResponse
             'code'    => $code,
             'message' => $message,
             'errors'  => $errors,
-        ]);
+        ], $code);
     }
 }
