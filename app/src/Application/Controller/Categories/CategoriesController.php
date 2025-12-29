@@ -11,6 +11,7 @@ use App\Application\Port\Output\Repositories\CategoryRepositoryPort;
 use App\Application\Presenters\Category\CategoryPresenter;
 use App\Application\Presenters\Commons\PaginatorPresenter;
 use App\Application\UseCases\Categories\CreateCategoryUseCase;
+use App\Application\UseCases\Categories\DeleteCategorytUseCase;
 use App\Application\UseCases\Categories\FindAllCategoriesUseCase;
 use App\Application\UseCases\Categories\FindCategoryUseCase;
 use App\Application\UseCases\Categories\UpdateCategoryUseCase;
@@ -265,6 +266,15 @@ class CategoriesController extends AbstractController
     #[OA\Patch(
         path: '/api/categories/{id}',
         summary: 'Atualiza uma categoria existente',
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'name', type: 'string', maxLength: 150, example: 'Bebidas (atualizado)', nullable: true),
+                    new OA\Property(property: 'description', type: 'string', maxLength: 5000, example: 'Refrigerantes, sucos e água', nullable: true),
+                ]
+            )
+        ),
         tags: ['Categories'],
         parameters: [
             new OA\Parameter(
@@ -275,15 +285,6 @@ class CategoriesController extends AbstractController
                 schema: new OA\Schema(type: 'integer'),
             )
         ],
-        requestBody: new OA\RequestBody(
-            required: true,
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: 'name', type: 'string', maxLength: 150, example: 'Bebidas (atualizado)', nullable: true),
-                    new OA\Property(property: 'description', type: 'string', maxLength: 5000, example: 'Refrigerantes, sucos e água', nullable: true),
-                ]
-            )
-        ),
         responses: [
             new OA\Response(
                 response: 200,
@@ -400,7 +401,7 @@ class CategoriesController extends AbstractController
     {
         try {
             $id = (int)$req->attributes->get('id');
-            $useCase = new DeleteProductUseCase($this->categoryRepository);
+            $useCase = new DeleteCategorytUseCase($this->categoryRepository);
 
             $useCase->execute($id);
 

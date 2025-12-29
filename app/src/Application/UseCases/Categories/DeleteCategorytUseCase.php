@@ -5,7 +5,7 @@ namespace App\Application\UseCases\Categories;
 use App\Application\Port\Output\Repositories\CategoryRepositoryPort;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-readonly class DeleteProductUseCase
+readonly class DeleteCategorytUseCase
 {
     public function __construct(
         public CategoryRepositoryPort $categoryRepository,

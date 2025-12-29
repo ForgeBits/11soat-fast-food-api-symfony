@@ -6,12 +6,15 @@ use App\Application\Domain\Dtos\Categories\CreateCategoryDto;
 use App\Application\Domain\Dtos\Categories\UpdateCategoryDto;
 use App\Application\Domain\Entities\Categories\Entity\Category;
 use App\Application\Port\Output\Repositories\CategoryRepositoryPort;
+use Doctrine\DBAL\Driver\PgSQL\Exception;
 
 class InMemoryCategoryRepository implements CategoryRepositoryPort
 {
     /** @var array<int, Category> */
     private array $items = [];
     private int $nextId = 1;
+    /** @var array<int,bool> */
+    private array $fkProtected = [];
 
     public function reset(): void
     {
@@ -64,11 +67,33 @@ class InMemoryCategoryRepository implements CategoryRepositoryPort
 
     public function update(UpdateCategoryDto $dto): Category
     {
-        // TODO: Implement update() method.
+        $category = $this->findById($dto->id);
+        if (!$category) {
+            throw new \RuntimeException('Category not found');
+        }
+        $category->setName($dto->name);
+        $category->setDescription($dto->description);
+        $category->touch();
+        return $category;
     }
 
     public function delete(Category $category): void
     {
-        // TODO: Implement delete() method.
+        $id = $category->getId();
+        if ($id === null) {
+            return;
+        }
+        if (($this->fkProtected[$id] ?? false) === true) {
+            // Simulate a FK violation similar to DB layer
+            // Use a generic \RuntimeException here; controller in feature tests may not rely on specific type
+            throw new \Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException(new Exception('Dbal error'), null);
+        }
+        unset($this->items[$id]);
+    }
+
+    // Test helper to simulate FK constraint on delete
+    public function protectWithForeignKey(int $id): void
+    {
+        $this->fkProtected[$id] = true;
     }
 }

@@ -20,16 +20,22 @@ readonly class UpdateProductUseCase
 
     public function execute(UpdateProductDto $dto): Product
     {
+        $product = $this->productRepository->findById($dto->id);
+
+        if (! $product) {
+            throw new NotFoundHttpException(message: 'Produto não encontrado.', code: 404);
+        }
+
         $existingProduct = $this->productRepository->findByName($dto->name);
 
         if ($existingProduct && $existingProduct->getId() !== $dto->id) {
-            throw new ConflictHttpException('Um produto com esse nome já existe.');
+            throw new ConflictHttpException(message: 'Um produto com esse nome já existe.', code: 409);
         }
 
         $category = $this->categoryRepository->findById($dto->category_id);
 
         if (!$category) {
-            throw new NotFoundHttpException('A categoria especificada não existe.');
+            throw new NotFoundHttpException(message: 'A categoria especificada não existe.', code: 404);
         }
 
         return $this->productRepository->update($dto);

@@ -8,6 +8,7 @@ use App\Infrastructure\Test\Doubles\InMemoryCategoryRepository;
 use App\Infrastructure\Test\Doubles\InMemoryProductRepository;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class ProductUpdateTest extends WebTestCase
 {
@@ -48,7 +49,7 @@ class ProductUpdateTest extends WebTestCase
         [$p, $cat] = $this->seedProductAndCategory();
 
         $payload = [
-            'name' => 'X-Burger 2',
+            'name' => 'X-Burger Test',
             'description' => 'Melhor ainda',
             'amount' => 31.9,
             'url_img' => 'https://example.com/x2.jpg',
@@ -62,14 +63,13 @@ class ProductUpdateTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals('success', $data['status'] ?? null);
-        $this->assertSame('X-Burger 2', $data['data']['name'] ?? null);
+        $this->assertSame('X-Burger Test', $data['data']['name'] ?? null);
         $this->assertFalse($data['data']['available'] ?? true);
     }
 
     public function test_update_validation_error_returns_400(): void
     {
         $this->seedProductAndCategory();
-        // Missing required fields and invalid url
         $payload = [
             'name' => '',
             'amount' => -1,
@@ -112,8 +112,9 @@ class ProductUpdateTest extends WebTestCase
 
         $this->client->request('PATCH', '/api/products/1', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
 
-        $this->assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
+
+        $this->assertSame(409, $this->client->getResponse()->getStatusCode());
         $this->assertEquals('error', $data['status'] ?? null);
         $this->assertStringContainsString('já existe', $data['message'] ?? '');
     }
@@ -133,8 +134,9 @@ class ProductUpdateTest extends WebTestCase
 
         $this->client->request('PATCH', '/api/products/1', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
 
-        $this->assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
+
+        $this->assertSame(404, $this->client->getResponse()->getStatusCode());
         $this->assertEquals('error', $data['status'] ?? null);
         $this->assertStringContainsString('não existe', $data['message'] ?? '');
     }

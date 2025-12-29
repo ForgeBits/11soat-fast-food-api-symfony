@@ -102,7 +102,6 @@ class ProductCreateTest extends WebTestCase
 
         $this->client->request('POST', '/api/products', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
 
-        $this->assertResponseIsSuccessful(); // current controller returns JsonResponse 200 with error body
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals('error', $data['status'] ?? null);
         $this->assertStringContainsString('já existe', $data['message'] ?? '');
@@ -122,7 +121,6 @@ class ProductCreateTest extends WebTestCase
 
         $this->client->request('POST', '/api/products', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
 
-        $this->assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals('error', $data['status'] ?? null);
         $this->assertStringContainsString('não existe', $data['message'] ?? '');

@@ -399,8 +399,12 @@ class ProductController extends AbstractController
 
             return ApiResponse::success(ProductPresenter::toResponse($product));
         } catch (NotFoundHttpException|ConflictHttpException $e) {
-            return ApiResponse::error($e->getMessage());
+            return ApiResponse::error(
+                message: $e->getMessage(),
+                code: $e->getCode()
+            );
         } catch (\Throwable $e) {
+            dd($e);
             return ApiResponse::error('Internal server error: ' . $e->getMessage());
         }
     }
