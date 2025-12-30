@@ -20,12 +20,6 @@ readonly class UpdateProductUseCase
 
     public function execute(UpdateProductDto $dto): Product
     {
-        $product = $this->productRepository->findById($dto->id);
-
-        if (! $product) {
-            throw new NotFoundHttpException(message: 'Produto não encontrado.', code: 404);
-        }
-
         $existingProduct = $this->productRepository->findByName($dto->name);
 
         if ($existingProduct && $existingProduct->getId() !== $dto->id) {
