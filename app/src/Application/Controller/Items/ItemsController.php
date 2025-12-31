@@ -31,6 +31,7 @@ class ItemsController extends AbstractController
     ) {
 
     }
+
     #[Route('', methods: ['POST'])]
     #[OA\Post(
         path: '/api/items',

@@ -26,3 +26,5 @@ services:
     # Interface to implementation aliases (default envs)
     App\Application\Port\Output\Repositories\ProductRepositoryPort: '@App\Infrastructure\Database\Repositories\Products\ProductRepository'
     App\Application\Port\Output\Repositories\CategoryRepositoryPort: '@App\Infrastructure\Database\Repositories\Products\CategoryRepository'
+    App\Application\Port\Output\Repositories\ItemRepositoryPort: '@App\Infrastructure\Database\Repositories\Products\ItemsRepository'
+    App\Application\Port\Output\Repositories\ProductItemRepositoryPort: '@App\Infrastructure\Database\Repositories\Products\ProductItemRepository'
