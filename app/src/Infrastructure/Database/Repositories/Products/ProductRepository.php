@@ -71,8 +71,9 @@ class ProductRepository extends ServiceEntityRepository implements ProductReposi
     public function findById(int $id): ?Product
     {
         return $this->createQueryBuilder('p')
-            ->leftJoin('p.category', 'c')
-            ->addSelect('c')
+            ->leftJoin('p.category', 'c')->addSelect('c')
+            ->leftJoin('p.productItems', 'pi')->addSelect('pi')
+            ->leftJoin('pi.item', 'i')->addSelect('i')
             ->andWhere('p.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
@@ -82,7 +83,10 @@ class ProductRepository extends ServiceEntityRepository implements ProductReposi
     public function findAllPaginated(array $filters, int $page, int $perPage): array
     {
          return $this->createQueryBuilder('p')
-            ->innerJoin('p.category', 'c')
+            ->select('DISTINCT p, c, pi, i')
+            ->leftJoin('p.category', 'c')->addSelect('c')
+            ->leftJoin('p.productItems', 'pi')->addSelect('pi')
+            ->leftJoin('pi.item', 'i')->addSelect('i')
             ->setFirstResult(($page - 1) * $perPage)
             ->setMaxResults($perPage)
             ->getQuery()

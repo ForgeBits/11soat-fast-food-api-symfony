@@ -79,6 +79,30 @@ class ProductController extends AbstractController
                                     new OA\Property(property: 'customizable', type: 'boolean', example: true),
                                     new OA\Property(property: 'available', type: 'boolean', example: true),
                                     new OA\Property(
+                                        property: 'product_items',
+                                        type: 'array',
+                                        items: new OA\Items(
+                                            properties: [
+                                                new OA\Property(property: 'id', type: 'integer', example: 10),
+                                                new OA\Property(property: 'itemId', type: 'integer', example: 2),
+                                                new OA\Property(property: 'essential', type: 'boolean', example: true),
+                                                new OA\Property(property: 'quantity', type: 'integer', example: 2),
+                                                new OA\Property(property: 'customizable', type: 'boolean', example: false),
+                                                new OA\Property(
+                                                    property: 'item',
+                                                    type: 'object',
+                                                    properties: [
+                                                        new OA\Property(property: 'id', type: 'integer', example: 2),
+                                                        new OA\Property(property: 'name', type: 'string', example: 'Batata Frita Média'),
+                                                    ]
+                                                ),
+                                                new OA\Property(property: 'created_at', type: 'string', example: '2025-01-01 12:00:00'),
+                                                new OA\Property(property: 'updated_at', type: 'string', example: '2025-01-01 12:00:00'),
+                                            ],
+                                            type: 'object'
+                                        )
+                                    ),
+                                    new OA\Property(
                                         property: 'category',
                                         properties: [
                                             new OA\Property(property: 'id', type: 'integer', example: 3),
@@ -169,6 +193,30 @@ class ProductController extends AbstractController
                                                 new OA\Property(property: 'customizable', type: 'boolean', example: true),
                                                 new OA\Property(property: 'available', type: 'boolean', example: true),
                                                 new OA\Property(
+                                                    property: 'product_items',
+                                                    type: 'array',
+                                                    items: new OA\Items(
+                                                        properties: [
+                                                            new OA\Property(property: 'id', type: 'integer', example: 10),
+                                                            new OA\Property(property: 'itemId', type: 'integer', example: 2),
+                                                            new OA\Property(property: 'essential', type: 'boolean', example: true),
+                                                            new OA\Property(property: 'quantity', type: 'integer', example: 2),
+                                                            new OA\Property(property: 'customizable', type: 'boolean', example: false),
+                                                            new OA\Property(
+                                                                property: 'item',
+                                                                type: 'object',
+                                                                properties: [
+                                                                    new OA\Property(property: 'id', type: 'integer', example: 2),
+                                                                    new OA\Property(property: 'name', type: 'string', example: 'Batata Frita Média'),
+                                                                ]
+                                                            ),
+                                                            new OA\Property(property: 'created_at', type: 'string', example: '2025-01-01 12:00:00'),
+                                                            new OA\Property(property: 'updated_at', type: 'string', example: '2025-01-01 12:00:00'),
+                                                        ],
+                                                        type: 'object'
+                                                    )
+                                                ),
+                                                new OA\Property(
                                                     property: 'category',
                                                     properties: [
                                                         new OA\Property(property: 'id', type: 'integer', example: 3),
@@ -254,6 +302,30 @@ class ProductController extends AbstractController
                                     new OA\Property(property: 'url_img', type: 'string', example: 'https://cdn.example.com/produtos/x-burger.jpg'),
                                     new OA\Property(property: 'customizable', type: 'boolean', example: true),
                                     new OA\Property(property: 'available', type: 'boolean', example: true),
+                                    new OA\Property(
+                                        property: 'product_items',
+                                        type: 'array',
+                                        items: new OA\Items(
+                                            properties: [
+                                                new OA\Property(property: 'id', type: 'integer', example: 10),
+                                                new OA\Property(property: 'itemId', type: 'integer', example: 2),
+                                                new OA\Property(property: 'essential', type: 'boolean', example: true),
+                                                new OA\Property(property: 'quantity', type: 'integer', example: 2),
+                                                new OA\Property(property: 'customizable', type: 'boolean', example: false),
+                                                new OA\Property(
+                                                    property: 'item',
+                                                    type: 'object',
+                                                    properties: [
+                                                        new OA\Property(property: 'id', type: 'integer', example: 2),
+                                                        new OA\Property(property: 'name', type: 'string', example: 'Batata Frita Média'),
+                                                    ]
+                                                ),
+                                                new OA\Property(property: 'created_at', type: 'string', example: '2025-01-01 12:00:00'),
+                                                new OA\Property(property: 'updated_at', type: 'string', example: '2025-01-01 12:00:00'),
+                                            ],
+                                            type: 'object'
+                                        )
+                                    ),
                                     new OA\Property(
                                         property: 'category',
                                         properties: [

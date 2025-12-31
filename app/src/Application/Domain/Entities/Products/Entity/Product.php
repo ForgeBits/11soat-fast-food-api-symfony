@@ -2,6 +2,9 @@
 namespace App\Application\Domain\Entities\Products\Entity;
 
 use App\Application\Domain\Entities\Categories\Entity\Category;
+use App\Application\Domain\Entities\ProductItem\Entity\ProductItem;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use App\Infrastructure\Database\Repositories\Products\ProductRepository;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -36,6 +39,12 @@ class Product
     #[ORM\JoinColumn(name: 'category_id', referencedColumnName: 'id', nullable: false)]
     private ?Category $category = null;
 
+    /**
+     * @var Collection<int, ProductItem>
+     */
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductItem::class)]
+    private Collection $productItems;
+
     #[ORM\Column(type:'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
@@ -46,6 +55,7 @@ class Product
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTime();
+        $this->productItems = new ArrayCollection();
     }
 
     public function getId(): ?int { return $this->id; }
@@ -78,6 +88,14 @@ class Product
     public function getUpdatedAt(): \DateTime { return $this->updatedAt; }
 
     public function touch(): void { $this->updatedAt = new \DateTime(); }
+
+    /**
+     * @return Collection<int, ProductItem>
+     */
+    public function getProductItems(): Collection
+    {
+        return $this->productItems;
+    }
 
     public function toArray(): array
     {

@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Database\Repositories\Products;
 
 use App\Application\Domain\Dtos\ProductItem\CreateProductItemDto;
+use App\Application\Domain\Dtos\ProductItem\UpdateProductItemDto;
 use App\Application\Domain\Entities\Items\Entity\Item;
 use App\Application\Domain\Entities\ProductItem\Entity\ProductItem;
 use App\Application\Domain\Entities\Products\Entity\Product;
@@ -48,5 +49,61 @@ class ProductItemRepository extends ServiceEntityRepository implements ProductIt
             ->setParameter('iid', $itemId)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function findById(int $id): ?ProductItem
+    {
+        return $this->createQueryBuilder('pi')
+            ->leftJoin('pi.product', 'p')->addSelect('p')
+            ->leftJoin('pi.item', 'i')->addSelect('i')
+            ->andWhere('pi.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function findAllPaginated(array $filters, int $page, int $perPage): array
+    {
+        return $this->createQueryBuilder('pi')
+            ->leftJoin('pi.product', 'p')->addSelect('p')
+            ->leftJoin('pi.item', 'i')->addSelect('i')
+            ->setFirstResult(($page - 1) * $perPage)
+            ->setMaxResults($perPage)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByProductId(int $productId): array
+    {
+        return $this->createQueryBuilder('pi')
+            ->leftJoin('pi.product', 'p')->addSelect('p')
+            ->leftJoin('pi.item', 'i')->addSelect('i')
+            ->andWhere('p.id = :pid')
+            ->setParameter('pid', $productId)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function update(UpdateProductItemDto $dto): ProductItem
+    {
+        /** @var ProductItem $entity */
+        $entity = $this->find($dto->id);
+        $entity->setEssential($dto->essential);
+        $entity->setQuantity($dto->quantity);
+        $entity->setCustomizable($dto->customizable);
+        $entity->touch();
+
+        $em = $this->getEntityManager();
+        $em->persist($entity);
+        $em->flush();
+
+        return $entity;
+    }
+
+    public function delete(ProductItem $entity): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($entity);
+        $em->flush();
     }
 }
