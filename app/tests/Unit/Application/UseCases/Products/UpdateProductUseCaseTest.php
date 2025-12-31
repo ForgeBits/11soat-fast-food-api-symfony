@@ -74,9 +74,7 @@ class UpdateProductUseCaseTest extends TestCase
         $productRepo = $this->createMock(ProductRepositoryPort::class);
         $categoryRepo = $this->createMock(CategoryRepositoryPort::class);
 
-        // Existing product with different ID
         $existing = new Product();
-        // set different id via reflection
         $ref = new \ReflectionProperty(Product::class, 'id');
         $ref->setAccessible(true);
         $ref->setValue($existing, 2);
