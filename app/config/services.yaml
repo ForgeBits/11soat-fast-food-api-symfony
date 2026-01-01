@@ -28,3 +28,4 @@ services:
     App\Application\Port\Output\Repositories\CategoryRepositoryPort: '@App\Infrastructure\Database\Repositories\Products\CategoryRepository'
     App\Application\Port\Output\Repositories\ItemRepositoryPort: '@App\Infrastructure\Database\Repositories\Products\ItemsRepository'
     App\Application\Port\Output\Repositories\ProductItemRepositoryPort: '@App\Infrastructure\Database\Repositories\Products\ProductItemRepository'
+    App\Application\Port\Output\Repositories\OrderRepositoryPort: '@App\Infrastructure\Database\Repositories\Orders\OrderRepository'
