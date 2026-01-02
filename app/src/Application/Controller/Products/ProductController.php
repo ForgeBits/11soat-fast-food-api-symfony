@@ -476,7 +476,6 @@ class ProductController extends AbstractController
                 code: $e->getCode()
             );
         } catch (\Throwable $e) {
-            dd($e);
             return ApiResponse::error('Internal server error: ' . $e->getMessage());
         }
     }

@@ -4,6 +4,7 @@ namespace App\Infrastructure\Database\Repositories\Orders;
 
 use App\Application\Domain\Dtos\Orders\CreateOrderDto;
 use App\Application\Domain\Dtos\Orders\UpdateOrderDto;
+use App\Application\Domain\Entities\Orders\Enum\OrderStatus;
 use App\Application\Domain\Entities\Orders\Entity\Order;
 use App\Application\Domain\Entities\Orders\Entity\OrderItem;
 use App\Application\Domain\Entities\Orders\Entity\OrderItemCustomization;
@@ -106,6 +107,23 @@ class OrderRepository extends ServiceEntityRepository implements OrderRepository
             $order->addProduct($ref);
         }
 
+        $em->persist($order);
+        $em->flush();
+
+        return $order;
+    }
+
+    public function updateStatus(int $id, OrderStatus $status): Order
+    {
+        $em = $this->registry->getManager();
+        /** @var Order|null $order */
+        $order = $this->find($id);
+        if (!$order) {
+            // Deixe o use case traduzir para 404; aqui mantemos comportamento simples
+            throw new \RuntimeException('Order not found');
+        }
+
+        $order->setStatus($status);
         $em->persist($order);
         $em->flush();
 

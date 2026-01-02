@@ -16,6 +16,9 @@ use App\Application\Presenters\Commons\PaginatorPresenter;
 use App\Application\Presenters\Orders\OrderPresenter;
 use App\Application\UseCases\Orders\CreateOrderUseCase;
 use App\Application\UseCases\Orders\FindAllOrdersUseCase;
+use App\Application\UseCases\Orders\FindOrderUseCase;
+use App\Application\UseCases\Orders\UpdateOrderStatusUseCase;
+use App\Application\Domain\Dtos\Orders\UpdateOrderStatusDto;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -155,6 +158,45 @@ class OrderController extends AbstractController
         }
     }
 
+    #[Route('/{id}', methods: ['GET'])]
+    #[OA\Get(
+        path: '/api/orders/{id}',
+        summary: 'Busca um pedido por ID',
+        tags: ['Orders'],
+        parameters: [
+            new OA\Parameter(name: 'id', description: 'ID do pedido', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Pedido encontrado',
+                content: new OA\MediaType(
+                    mediaType: 'application/json',
+                    schema: new OA\Schema(
+                        properties: [
+                            new OA\Property(property: 'success', type: 'boolean', example: true),
+                            new OA\Property(property: 'data', type: 'object')
+                        ]
+                    )
+                )
+            ),
+            new OA\Response(response: 404, description: 'Pedido não encontrado'),
+            new OA\Response(response: 500, description: 'Erro interno do servidor'),
+        ]
+    )]
+    public function find(int $id): JsonResponse
+    {
+        try {
+            $useCase = new FindOrderUseCase($this->orderRepository);
+            $order = $useCase->execute($id);
+            return ApiResponse::success(OrderPresenter::toResponse($order));
+        } catch (HttpExceptionInterface $e) {
+            return ApiResponse::error(message: $e->getMessage(), code: $e->getStatusCode());
+        } catch (\Throwable $e) {
+            return ApiResponse::error('Internal server error: ' . $e->getMessage());
+        }
+    }
+
     #[Route('', methods: ['GET'])]
     #[OA\Get(
         path: '/api/orders',
@@ -263,6 +305,78 @@ class OrderController extends AbstractController
             }, $result);
 
             return ApiResponse::success(PaginatorPresenter::toResponse($pagination, $items));
+        } catch (\Throwable $e) {
+            return ApiResponse::error('Internal server error: ' . $e->getMessage());
+        }
+    }
+
+    #[Route('/{id}', methods: ['PATCH'])]
+    #[OA\Patch(
+        path: '/api/orders/{id}',
+        summary: 'Atualiza apenas o status de um pedido',
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\MediaType(
+                mediaType: 'application/json',
+                schema: new OA\Schema(
+                    required: ['status'],
+                    properties: [
+                        new OA\Property(property: 'status', type: 'string', enum: ['PENDING','PAID','CANCELED','FAILED','IN_PREPARATION','READY_TO_DELIVER','DONE'], example: 'PAID'),
+                    ],
+                    type: 'object'
+                )
+            )
+        ),
+        tags: ['Orders'],
+        parameters: [
+            new OA\Parameter(name: 'id', description: 'ID do pedido', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Status do pedido atualizado com sucesso',
+                content: new OA\MediaType(
+                    mediaType: 'application/json',
+                    schema: new OA\Schema(
+                        properties: [
+                            new OA\Property(property: 'success', type: 'boolean', example: true),
+                            new OA\Property(property: 'data', type: 'object')
+                        ],
+                        type: 'object'
+                    )
+                )
+            ),
+            new OA\Response(response: 400, description: 'Payload inválido'),
+            new OA\Response(response: 404, description: 'Pedido não encontrado'),
+            new OA\Response(response: 500, description: 'Erro interno do servidor'),
+        ]
+    )]
+    public function updateStatus(int $id, Request $req, ValidatorInterface $validator): JsonResponse
+    {
+        try {
+            $payload = json_decode($req->getContent() ?? '{}', true) ?: [];
+
+            $dto = new UpdateOrderStatusDto();
+            $dto->id = $id;
+
+            $statusStr = (string)($payload['status'] ?? '');
+            try {
+                $dto->status = OrderStatus::from($statusStr);
+            } catch (\Throwable $e) {
+                return ApiResponse::error(message: 'Invalid status value', code: 400);
+            }
+
+            $errors = $validator->validate($dto);
+            if (count($errors) > 0) {
+                return $this->json(['errors' => (string)$errors], 400);
+            }
+
+            $useCase = new UpdateOrderStatusUseCase($this->orderRepository);
+            $order = $useCase->execute($dto);
+
+            return ApiResponse::success(OrderPresenter::toResponse($order));
+        } catch (HttpExceptionInterface $e) {
+            return ApiResponse::error(message: $e->getMessage(), code: $e->getStatusCode());
         } catch (\Throwable $e) {
             return ApiResponse::error('Internal server error: ' . $e->getMessage());
         }
