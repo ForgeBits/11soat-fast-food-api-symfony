@@ -14,7 +14,11 @@ services:
       - '@App\Infrastructure\Test\Doubles\InMemoryItemRepository'
     public: true
 
+  App\Infrastructure\Test\Doubles\InMemoryOrderRepository:
+    public: true
+
   App\Application\Port\Output\Repositories\ProductRepositoryPort: '@App\Infrastructure\Test\Doubles\InMemoryProductRepository'
   App\Application\Port\Output\Repositories\CategoryRepositoryPort: '@App\Infrastructure\Test\Doubles\InMemoryCategoryRepository'
   App\Application\Port\Output\Repositories\ItemRepositoryPort: '@App\Infrastructure\Test\Doubles\InMemoryItemRepository'
   App\Application\Port\Output\Repositories\ProductItemRepositoryPort: '@App\Infrastructure\Test\Doubles\InMemoryProductItemRepository'
+  App\Application\Port\Output\Repositories\OrderRepositoryPort: '@App\Infrastructure\Test\Doubles\InMemoryOrderRepository'

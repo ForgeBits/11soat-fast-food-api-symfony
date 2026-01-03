@@ -18,6 +18,7 @@ use App\Application\UseCases\Orders\CreateOrderUseCase;
 use App\Application\UseCases\Orders\FindAllOrdersUseCase;
 use App\Application\UseCases\Orders\FindOrderUseCase;
 use App\Application\UseCases\Orders\UpdateOrderStatusUseCase;
+use App\Application\UseCases\Orders\DeleteOrderUseCase;
 use App\Application\Domain\Dtos\Orders\UpdateOrderStatusDto;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -376,6 +377,47 @@ class OrderController extends AbstractController
 
             return ApiResponse::success(OrderPresenter::toResponse($order));
         } catch (HttpExceptionInterface $e) {
+            return ApiResponse::error(message: $e->getMessage(), code: $e->getStatusCode());
+        } catch (\Throwable $e) {
+            return ApiResponse::error('Internal server error: ' . $e->getMessage());
+        }
+    }
+
+    #[Route('/{id}', methods: ['DELETE'])]
+    #[OA\Delete(
+        path: '/api/orders/{id}',
+        summary: 'Remove um pedido pelo ID',
+        tags: ['Orders'],
+        parameters: [
+            new OA\Parameter(name: 'id', description: 'ID do pedido', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Pedido removido com sucesso',
+                content: new OA\MediaType(
+                    mediaType: 'application/json',
+                    schema: new OA\Schema(
+                        properties: [
+                            new OA\Property(property: 'success', type: 'boolean', example: true),
+                            new OA\Property(property: 'message', type: 'string', example: 'Order deleted successfully')
+                        ],
+                        type: 'object'
+                    )
+                )
+            ),
+            new OA\Response(response: 404, description: 'Pedido não encontrado'),
+            new OA\Response(response: 500, description: 'Erro interno do servidor')
+        ]
+    )]
+    public function delete(int $id): JsonResponse
+    {
+        try {
+            $useCase = new DeleteOrderUseCase($this->orderRepository);
+            $useCase->execute($id);
+
+            return ApiResponse::success(message: 'Order deleted successfully');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $e) {
             return ApiResponse::error(message: $e->getMessage(), code: $e->getStatusCode());
         } catch (\Throwable $e) {
             return ApiResponse::error('Internal server error: ' . $e->getMessage());
