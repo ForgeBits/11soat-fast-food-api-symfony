@@ -10,6 +10,10 @@ permissions:
   issues: write
   checks: write
 
+defaults:
+  run:
+    working-directory: app
+
 env:
   MIN_COVERAGE: 80
   IGNORE_PATTERNS: "**/*DTO.php,**/*Enum.php,**/ValueObjects/**,**/*Interface.php,**/public/index.php,**/config/**,**/database/migrations/**,**/database/seeders/**"
@@ -309,8 +313,8 @@ jobs:
         with:
           name: coverage-per-file-report-${{ github.sha }}
           path: |
-            coverage/
-            coverage-per-file-results.json
+            app/coverage/
+            app/coverage-per-file-results.json
           retention-days: 30
 
       - name: ✅ Report job completion
@@ -357,7 +361,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: coverage-per-file-report-${{ github.sha }}
-          path: coverage/
+          path: app/coverage/
 
       - name: 🔍 Run SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@master
@@ -368,6 +372,7 @@ jobs:
           args: >
             -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
             -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+            -Dsonar.projectBaseDir=app
             -Dsonar.php.coverage.reportPaths=coverage/clover.xml
             -Dsonar.php.tests.reportPath=coverage/junit.xml
 
@@ -413,7 +418,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const resultsPath = 'coverage-per-file-results.json';
+            const resultsPath = 'app/coverage-per-file-results.json';
             
             let results = { failed: [], summary: {} };
             if (fs.existsSync(resultsPath)) {
@@ -430,33 +435,34 @@ jobs:
               ).join('\n');
             }
 
-            const comment = `## 🚫 PR Bloqueado: Cobertura Insuficiente por Arquivo
-
-### ❌ Validação de 80% de cobertura por arquivo FALHOU
-
-**Arquivos com problema:** ${failedFiles.length}
-
-#### 📋 Arquivos que precisam de mais testes:
-
-${filesList}
-
-#### 📊 Resumo:
-- 📁 Total de arquivos: ${summary.totalFiles || 'N/A'}
-- 🔍 Arquivos analisados: ${summary.analyzedFiles || 'N/A'}
-- ✅ Arquivos com ≥80%: ${summary.passedFiles || 'N/A'}
-- ❌ Arquivos com <80%: ${summary.failedFiles || 'N/A'}
-- 📈 Cobertura geral: ${summary.overallCoverage || 'N/A'}%
-
-#### 🔧 Como corrigir:
-
-1. Execute localmente: \`vendor/bin/phpunit --coverage-html coverage/html\`
-2. Abra \`coverage/html/index.html\` no navegador
-3. Verifique cada arquivo listado acima
-4. Adicione testes unitários para cobrir as linhas faltantes
-5. Garanta que **cada arquivo** atinja pelo menos 80% de cobertura
-6. Atualize este PR
-
-*Este PR está bloqueado até que todos os arquivos tenham pelo menos 80% de cobertura.*`;
+            const comment = [
+              '## 🚫 PR Bloqueado: Cobertura Insuficiente por Arquivo',
+              '',
+              '### ❌ Validação de 80% de cobertura por arquivo FALHOU',
+              '',
+              `Arquivos com problema: ${failedFiles.length}`,
+              '',
+              '#### 📋 Arquivos que precisam de mais testes:',
+              '',
+              filesList,
+              '',
+              '#### 📊 Resumo:',
+              `- 📁 Total de arquivos: ${summary.totalFiles || 'N/A'}`,
+              `- 🔍 Arquivos analisados: ${summary.analyzedFiles || 'N/A'}`,
+              `- ✅ Arquivos com ≥80%: ${summary.passedFiles || 'N/A'}`,
+              `- ❌ Arquivos com <80%: ${summary.failedFiles || 'N/A'}`,
+              `- 📈 Cobertura geral: ${summary.overallCoverage || 'N/A'}%`,
+              '',
+              '#### 🔧 Como corrigir:',
+              '1. Execute localmente: `vendor/bin/phpunit --coverage-html coverage/html`',
+              '2. Abra `coverage/html/index.html` no navegador',
+              '3. Verifique cada arquivo listado acima',
+              '4. Adicione testes unitários para cobrir as linhas faltantes',
+              '5. Garanta que cada arquivo atinja pelo menos 80% de cobertura',
+              '6. Atualize este PR',
+              '',
+              'Este PR está bloqueado até que todos os arquivos tenham pelo menos 80% de cobertura.'
+            ].join('\n');
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
@@ -510,25 +516,34 @@ ${filesList}
           COVERAGE_SUMMARY: ${{ needs.verify-coverage-per-file.outputs.coverage_summary }}
         with:
           script: |
-            const comment = `## ✅ Todas as Validações Passaram!
+            const lines = [
+              '## ✅ Todas as Validações Passaram!',
+              '',
+              '### 🎉 PR Aprovado nas Verificações Automáticas',
+              '',
+              '#### ✓ Checklist de Qualidade:',
+              '- ✅ Build: Compilação bem-sucedida',
+              '- ✅ Testes: Todos os testes passaram',
+              '- ✅ Cobertura: ≥80% por arquivo validado',
+              '- ✅ SonarQube: Análise de código completa',
+              '- ✅ Qualidade: Padrões de código atendidos',
+              '',
+              '#### 📊 Resumo de Cobertura:'
+            ];
+            try {
+              const summary = process.env.COVERAGE_SUMMARY ? JSON.parse(process.env.COVERAGE_SUMMARY) : {};
+              lines.push(`- 📁 Arquivos analisados: ${summary.analyzedFiles ?? 'N/A'}`);
+              lines.push(`- 📈 Cobertura geral: ${summary.overallCoverage ?? 'N/A'}%`);
+            } catch (e) {
+              lines.push('- 📁 Arquivos analisados: N/A');
+              lines.push('- 📈 Cobertura geral: N/A');
+            }
+            lines.push('- ✅ Status: Todos os arquivos ≥80%');
+            lines.push('');
+            lines.push('---');
+            lines.push('Este PR está pronto para revisão manual e merge! 🚀');
 
-### 🎉 PR Aprovado nas Verificações Automáticas
-
-#### ✓ Checklist de Qualidade:
-- ✅ **Build:** Compilação bem-sucedida
-- ✅ **Testes:** Todos os testes passaram
-- ✅ **Cobertura:** ≥80% por arquivo validado
-- ✅ **SonarQube:** Análise de código completa
-- ✅ **Qualidade:** Padrões de código atendidos
-
-#### 📊 Resumo de Cobertura:
-- 📁 Arquivos analisados: ${process.env.COVERAGE_SUMMARY?.analyzedFiles || 'N/A'}
-- 📈 Cobertura geral: ${process.env.COVERAGE_SUMMARY?.overallCoverage || 'N/A'}%
-- ✅ Status: **Todos os arquivos ≥80%**
-
----
-*Este PR está pronto para revisão manual e merge! 🚀*`;
-
+            const comment = lines.join('\n');
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
