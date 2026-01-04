@@ -14,4 +14,4 @@
 /.phpunit.cache/
 ###< phpunit/phpunit ###
 
-./app/coverage
+/coverage
