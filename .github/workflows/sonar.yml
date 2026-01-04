@@ -45,7 +45,7 @@ jobs:
           tools: composer:v2
 
       - name: 📦 Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --ignore-platform-reqs --prefer-dist --no-progress --no-suggest
 
       - name: 🧪 Run PHPUnit tests with coverage
         id: run-tests
