@@ -1,0 +1,564 @@
+name: SonarQube Analysis - 80% Coverage per File (PHP)
+
+on:
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  checks: write
+
+env:
+  MIN_COVERAGE: 80
+  IGNORE_PATTERNS: "**/*DTO.php,**/*Enum.php,**/ValueObjects/**,**/*Interface.php,**/public/index.php,**/config/**,**/database/migrations/**,**/database/seeders/**"
+
+jobs:
+  build-and-test:
+    name: 🏗️ Build & Test
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ⚙️ Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, json, tokenizer, pdo, pdo_mysql
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: 📦 Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: 🧪 Run PHPUnit tests with coverage
+        id: run-tests
+        run: |
+          echo "Running PHPUnit tests with coverage..."
+          vendor/bin/phpunit --coverage-clover=coverage/clover.xml --coverage-xml=coverage/coverage-xml --coverage-html=coverage/html --log-junit=coverage/junit.xml
+
+          # Verifica se o clover.xml foi gerado
+          if [ -f "coverage/clover.xml" ]; then
+            echo "✅ clover.xml generated successfully"
+            echo "File size: $(wc -l < coverage/clover.xml) lines"
+          else
+            echo "❌ ERROR: clover.xml not generated!"
+            ls -la coverage/ 2>/dev/null || echo "No coverage directory"
+            exit 1
+          fi
+
+      - name: ✅ Report job completion
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Job 'build-and-test' completed successfully"
+          else
+            echo "❌ Job 'build-and-test' failed"
+          fi
+
+  verify-coverage-per-file:
+    name: 🔬 Verify 80% Coverage PER FILE
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+
+    timeout-minutes: 10
+
+    outputs:
+      coverage_passed: ${{ steps.check-coverage.outputs.passed }}
+      failed_files: ${{ steps.check-coverage.outputs.failed_files }}
+      failed_count: ${{ steps.check-coverage.outputs.failed_count }}
+      coverage_summary: ${{ steps.check-coverage.outputs.coverage_summary }}
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ⚙️ Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, json, tokenizer, pdo, pdo_mysql
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: 📦 Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: 📊 Generate detailed coverage report
+        run: |
+          vendor/bin/phpunit --coverage-clover=coverage/clover.xml \
+            --coverage-xml=coverage/coverage-xml \
+            --coverage-html=coverage/html \
+            --log-junit=coverage/junit.xml
+
+      - name: 🔍 Validate 80% Coverage PER FILE
+        id: check-coverage
+        run: |
+          # Script PHP que valida CADA ARQUIVO individualmente
+          php -r "
+          echo '🔍 VALIDAÇÃO: 80% de cobertura POR ARQUIVO' . PHP_EOL;
+          echo '===========================================' . PHP_EOL;
+          echo 'Mínimo exigido por arquivo: 80%' . PHP_EOL;
+          echo 'Arquivos ignorados: DTOs, Enums, Interfaces, Value Objects, Index, Configs' . PHP_EOL . PHP_EOL;
+
+          // 1. CARREGAR RELATÓRIO CLOVER
+          \$cloverPath = './coverage/clover.xml';
+          if (!file_exists(\$cloverPath)) {
+              echo '❌ Relatório de cobertura não encontrado!' . PHP_EOL;
+              exit(1);
+          }
+
+          \$xml = simplexml_load_file(\$cloverPath);
+          if (!\$xml) {
+              echo '❌ Erro ao carregar XML de cobertura!' . PHP_EOL;
+              exit(1);
+          }
+
+          \$MIN_COVERAGE = 80;
+
+          // 2. PADRÕES DE IGNORAÇÃO
+          \$IGNORE_PATTERNS = [
+              '/DTO\.php$/i',
+              '/Enum\.php$/i',
+              '/Interface\.php$/i',
+              '/ValueObjects\//i',
+              '/index\.php$/i',
+              '/config\.php$/i',
+              '/migrations\//i',
+              '/seeders\//i',
+              '/Test\.php$/i',
+              '/tests\//i',
+              '/__tests__/i'
+          ];
+
+          function shouldIgnore(\$filePath, \$patterns) {
+              foreach (\$patterns as \$pattern) {
+                  if (preg_match(\$pattern, \$filePath)) {
+                      return true;
+                  }
+              }
+              return false;
+          }
+
+          // 3. ANÁLISE POR ARQUIVO
+          \$results = [
+              'passed' => [],
+              'failed' => [],
+              'ignored' => [],
+              'summary' => [
+                  'totalFiles' => 0,
+                  'analyzedFiles' => 0,
+                  'ignoredFiles' => 0,
+                  'passedFiles' => 0,
+                  'failedFiles' => 0,
+                  'overallCoverage' => 0
+              ]
+          ];
+
+          \$totalElements = 0;
+          \$coveredElements = 0;
+
+          // Processar todos os arquivos
+          foreach (\$xml->xpath('//file') as \$file) {
+              \$filePath = (string)\$file['name'];
+              \$results['summary']['totalFiles']++;
+
+              // Verificar se deve ignorar
+              if (shouldIgnore(\$filePath, \$IGNORE_PATTERNS)) {
+                  \$results['ignored'][] = \$filePath;
+                  \$results['summary']['ignoredFiles']++;
+                  continue;
+              }
+
+              // Calcular métricas do arquivo
+              \$metrics = \$file->xpath('.//metrics')[0];
+              if (!\$metrics) continue;
+
+              \$elements = (int)\$metrics['elements'];
+              \$coveredelements = (int)\$metrics['coveredelements'];
+              
+              \$totalElements += \$elements;
+              \$coveredElements += \$coveredelements;
+
+              \$fileCoverage = \$elements > 0 ? (\$coveredelements / \$elements) * 100 : 0;
+
+              \$fileResult = [
+                  'file' => \$filePath,
+                  'coverage' => round(\$fileCoverage, 2),
+                  'elements' => \$elements,
+                  'covered' => \$coveredelements
+              ];
+
+              \$results['summary']['analyzedFiles']++;
+
+              // Classificar como passou ou falhou (80% POR ARQUIVO)
+              if (\$fileCoverage >= \$MIN_COVERAGE) {
+                  \$results['passed'][] = \$fileResult;
+                  \$results['summary']['passedFiles']++;
+              } else {
+                  \$results['failed'][] = \$fileResult;
+                  \$results['summary']['failedFiles']++;
+              }
+          }
+
+          // Calcular cobertura geral
+          \$results['summary']['overallCoverage'] = \$totalElements > 0 
+              ? round((\$coveredElements / \$totalElements) * 100, 2) 
+              : 0;
+
+          // 4. RELATÓRIO DETALHADO
+          echo '📊 RESUMO DA ANÁLISE POR ARQUIVO:' . PHP_EOL;
+          echo '----------------------------------' . PHP_EOL;
+          echo sprintf('📁 Total de arquivos no projeto: %d', \$results['summary']['totalFiles']) . PHP_EOL;
+          echo sprintf('🔍 Arquivos analisados para cobertura: %d', \$results['summary']['analyzedFiles']) . PHP_EOL;
+          echo sprintf('⏭️  Arquivos ignorados (DTOs/Enums/etc): %d', \$results['summary']['ignoredFiles']) . PHP_EOL;
+          echo sprintf('✅ Arquivos com ≥%d%%: %d', \$MIN_COVERAGE, \$results['summary']['passedFiles']) . PHP_EOL;
+          echo sprintf('❌ Arquivos com <%d%%: %d', \$MIN_COVERAGE, \$results['summary']['failedFiles']) . PHP_EOL;
+          echo sprintf('📈 Cobertura total do projeto: %.2f%%', \$results['summary']['overallCoverage']) . PHP_EOL;
+
+          // 5. SE HOUVER ARQUIVOS COM FALHA
+          if (count(\$results['failed']) > 0) {
+              echo PHP_EOL . '❌❌❌ VALIDAÇÃO FALHOU ❌❌❌' . PHP_EOL;
+              echo '================================' . PHP_EOL;
+              echo sprintf('❌ %d arquivo(s) com cobertura abaixo de %d%%:', count(\$results['failed']), \$MIN_COVERAGE) . PHP_EOL . PHP_EOL;
+
+              foreach (\$results['failed'] as \$file) {
+                  echo sprintf(
+                      '  ❌ %s → %.2f%% (cobertura insuficiente - mínimo: %d%%)',
+                      \$file['file'],
+                      \$file['coverage'],
+                      \$MIN_COVERAGE
+                  ) . PHP_EOL;
+              }
+
+              echo PHP_EOL . '📋 PRÓXIMOS PASSOS:' . PHP_EOL;
+              echo '  1. Adicione testes unitários para os arquivos listados acima' . PHP_EOL;
+              echo '  2. Execute: vendor/bin/phpunit --coverage-html coverage/html' . PHP_EOL;
+              echo '  3. Abra coverage/html/index.html no navegador' . PHP_EOL;
+              echo '  4. Verifique cada arquivo e adicione testes para linhas não cobertas' . PHP_EOL;
+              echo '  5. Garanta que CADA arquivo tenha pelo menos 80% de cobertura' . PHP_EOL;
+              echo '  6. Atualize este PR' . PHP_EOL;
+
+              // Salvar resultados
+              file_put_contents('coverage-per-file-results.json', json_encode(\$results, JSON_PRETTY_PRINT));
+
+              // Definir outputs do GitHub Actions
+              file_put_contents(getenv('GITHUB_OUTPUT'), 'passed=false' . PHP_EOL, FILE_APPEND);
+              file_put_contents(getenv('GITHUB_OUTPUT'), 'failed_count=' . count(\$results['failed']) . PHP_EOL, FILE_APPEND);
+              
+              exit(1);
+          } else {
+              echo PHP_EOL . '✅✅✅ VALIDAÇÃO PASSOU! ✅✅✅' . PHP_EOL;
+              echo '==============================' . PHP_EOL;
+              echo sprintf('✅ Todos os %d arquivos analisados têm ≥%d%% de cobertura!', \$results['summary']['analyzedFiles'], \$MIN_COVERAGE) . PHP_EOL . PHP_EOL;
+
+              echo '📊 DETALHAMENTO:' . PHP_EOL;
+              foreach (\$results['passed'] as \$file) {
+                  echo sprintf(
+                      '  ✅ %s → %.2f%%',
+                      \$file['file'],
+                      \$file['coverage']
+                  ) . PHP_EOL;
+              }
+
+              if (count(\$results['ignored']) > 0) {
+                  echo PHP_EOL . sprintf('⏭️  Arquivos ignorados (%d):', count(\$results['ignored'])) . PHP_EOL;
+                  foreach (array_slice(\$results['ignored'], 0, 5) as \$file) {
+                      echo '  ⏭️  ' . \$file . PHP_EOL;
+                  }
+                  if (count(\$results['ignored']) > 5) {
+                      echo sprintf('  ... e mais %d arquivo(s)', count(\$results['ignored']) - 5) . PHP_EOL;
+                  }
+              }
+
+              echo PHP_EOL . '🎉 Excelente trabalho! O código está bem testado!' . PHP_EOL;
+
+              // Salvar resultados
+              file_put_contents('coverage-per-file-results.json', json_encode(\$results, JSON_PRETTY_PRINT));
+
+              // Definir outputs do GitHub Actions
+              file_put_contents(getenv('GITHUB_OUTPUT'), 'passed=true' . PHP_EOL, FILE_APPEND);
+              file_put_contents(getenv('GITHUB_OUTPUT'), 'failed_count=0' . PHP_EOL, FILE_APPEND);
+              
+              exit(0);
+          }
+          "
+
+      - name: 💾 Save coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-per-file-report-${{ github.sha }}
+          path: |
+            coverage/
+            coverage-per-file-results.json
+          retention-days: 30
+
+      - name: ✅ Report job completion
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Job 'verify-coverage-per-file' completed successfully"
+          else
+            echo "❌ Job 'verify-coverage-per-file' failed"
+          fi
+
+  sonarqube-analysis:
+    name: 📡 SonarQube Analysis
+    needs: verify-coverage-per-file
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+
+    if: needs.verify-coverage-per-file.outputs.coverage_passed == 'true'
+
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ⚙️ Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, json, tokenizer, pdo, pdo_mysql
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: 📦 Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: 📁 Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-per-file-report-${{ github.sha }}
+          path: coverage/
+
+      - name: 🔍 Run SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+            -Dsonar.php.coverage.reportPaths=coverage/clover.xml
+            -Dsonar.php.tests.reportPath=coverage/junit.xml
+
+      - name: ✅ Report job completion
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Job 'sonarqube-analysis' completed successfully"
+          else
+            echo "❌ Job 'sonarqube-analysis' failed"
+          fi
+
+  block-pr-on-failure:
+    name: 🚫 Block PR IF Insufficient File Coverage
+    needs: verify-coverage-per-file
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+
+    if: |
+      github.event_name == 'pull_request' && 
+      needs.verify-coverage-per-file.outputs.coverage_passed == 'false'
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📁 Download results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-per-file-report-*
+          merge-multiple: true
+
+      - name: 📝 Create detailed PR comment
+        uses: actions/github-script@v6
+        env:
+          FAILED_FILES: ${{ needs.verify-coverage-per-file.outputs.failed_files }}
+          FAILED_COUNT: ${{ needs.verify-coverage-per-file.outputs.failed_count }}
+          COVERAGE_SUMMARY: ${{ needs.verify-coverage-per-file.outputs.coverage_summary }}
+        with:
+          script: |
+            const fs = require('fs');
+            const resultsPath = 'coverage-per-file-results.json';
+            
+            let results = { failed: [], summary: {} };
+            if (fs.existsSync(resultsPath)) {
+              results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
+            }
+
+            const failedFiles = results.failed || [];
+            const summary = results.summary || {};
+
+            let filesList = '';
+            if (failedFiles.length > 0) {
+              filesList = failedFiles.map(file => 
+                `- ❌ \`${file.file}\` → **${file.coverage}%** (mínimo: 80%)`
+              ).join('\n');
+            }
+
+            const comment = `## 🚫 PR Bloqueado: Cobertura Insuficiente por Arquivo
+
+### ❌ Validação de 80% de cobertura por arquivo FALHOU
+
+**Arquivos com problema:** ${failedFiles.length}
+
+#### 📋 Arquivos que precisam de mais testes:
+
+${filesList}
+
+#### 📊 Resumo:
+- 📁 Total de arquivos: ${summary.totalFiles || 'N/A'}
+- 🔍 Arquivos analisados: ${summary.analyzedFiles || 'N/A'}
+- ✅ Arquivos com ≥80%: ${summary.passedFiles || 'N/A'}
+- ❌ Arquivos com <80%: ${summary.failedFiles || 'N/A'}
+- 📈 Cobertura geral: ${summary.overallCoverage || 'N/A'}%
+
+#### 🔧 Como corrigir:
+
+1. Execute localmente: \`vendor/bin/phpunit --coverage-html coverage/html\`
+2. Abra \`coverage/html/index.html\` no navegador
+3. Verifique cada arquivo listado acima
+4. Adicione testes unitários para cobrir as linhas faltantes
+5. Garanta que **cada arquivo** atinja pelo menos 80% de cobertura
+6. Atualize este PR
+
+*Este PR está bloqueado até que todos os arquivos tenham pelo menos 80% de cobertura.*`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
+      - name: 🚫 Fail workflow to block merge
+        run: |
+          echo "================================================"
+          echo "🚫🚫🚫        PR BLOQUEADO AUTOMATICAMENTE    🚫🚫🚫"
+          echo "================================================"
+          echo ""
+          echo "MOTIVO: Validação de 80% de cobertura por arquivo falhou"
+          echo ""
+          echo "RESUMO:"
+          echo "- Um ou mais arquivos têm cobertura < 80%"
+          echo "- Verifique o comentário no PR para detalhes"
+          echo ""
+          echo "PRÓXIMOS PASSOS:"
+          echo "1. Verifique os arquivos listados no comentário do PR"
+          echo "2. Adicione testes unitários para esses arquivos"
+          echo "3. Execute: vendor/bin/phpunit --coverage-html coverage/html"
+          echo "4. Confirme que cada arquivo atinge 80%"
+          echo "5. Atualize este PR"
+          echo ""
+          echo "Arquivos com problema foram salvos em coverage-per-file-results.json"
+          echo "================================================"
+          exit 1
+
+  final-validation:
+    name: ✅ Final Validation & Summary
+    needs: [verify-coverage-per-file, sonarqube-analysis]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+
+    if: |
+      github.event_name == 'pull_request' &&
+      needs.verify-coverage-per-file.result == 'success' &&
+      (needs.sonarqube-analysis.result == 'success' || needs.sonarqube-analysis.result == 'skipped')
+
+    steps:
+      - name: 📋 Create success summary
+        uses: actions/github-script@v6
+        env:
+          COVERAGE_SUMMARY: ${{ needs.verify-coverage-per-file.outputs.coverage_summary }}
+        with:
+          script: |
+            const comment = `## ✅ Todas as Validações Passaram!
+
+### 🎉 PR Aprovado nas Verificações Automáticas
+
+#### ✓ Checklist de Qualidade:
+- ✅ **Build:** Compilação bem-sucedida
+- ✅ **Testes:** Todos os testes passaram
+- ✅ **Cobertura:** ≥80% por arquivo validado
+- ✅ **SonarQube:** Análise de código completa
+- ✅ **Qualidade:** Padrões de código atendidos
+
+#### 📊 Resumo de Cobertura:
+- 📁 Arquivos analisados: ${process.env.COVERAGE_SUMMARY?.analyzedFiles || 'N/A'}
+- 📈 Cobertura geral: ${process.env.COVERAGE_SUMMARY?.overallCoverage || 'N/A'}%
+- ✅ Status: **Todos os arquivos ≥80%**
+
+---
+*Este PR está pronto para revisão manual e merge! 🚀*`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
+      - name: 🎉 All checks passed
+        run: |
+          echo "========================================"
+          echo "✅✅✅ ALL VALIDATIONS PASSED! ✅✅✅"
+          echo "========================================"
+          echo ""
+          echo "✓ Build: Successful"
+          echo "✓ Test coverage: ≥80% PER FILE (validated)"
+          echo "✓ SonarQube analysis: Completed"
+          echo "✓ Code quality: Meets standards"
+          echo ""
+          echo "This PR is ready for manual review and merge!"
+          echo ""
+          echo "Files analyzed: ${{ needs.verify-coverage-per-file.outputs.coverage_summary.analyzedFiles || 'N/A' }}"
+          echo "Overall coverage: ${{ needs.verify-coverage-per-file.outputs.coverage_summary.overallCoverage || 'N/A' }}%"
+          echo ""
+          echo "🚀 Ready to merge! 🚀"
+
+      - name: ✅ Report final validation completion
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Job 'final-validation' completed successfully"
+          else
+            echo "❌ Job 'final-validation' failed"
+          fi
