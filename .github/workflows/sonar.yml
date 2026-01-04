@@ -45,13 +45,13 @@ jobs:
           tools: composer:v2
 
       - name: 📦 Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --ignore-platform-reqs --prefer-dist --no-progress --no-suggest
 
       - name: 🧪 Run PHPUnit tests with coverage
         id: run-tests
         run: |
           echo "Running PHPUnit tests with coverage..."
-          vendor/bin/phpunit --coverage-clover=coverage/clover.xml --coverage-xml=coverage/coverage-xml --coverage-html=coverage/html --log-junit=coverage/junit.xml
+          XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text
 
           # Verifica se o clover.xml foi gerado
           if [ -f "coverage/clover.xml" ]; then
@@ -109,7 +109,7 @@ jobs:
 
       - name: 📊 Generate detailed coverage report
         run: |
-          vendor/bin/phpunit --coverage-clover=coverage/clover.xml \
+          XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover=coverage/clover.xml \
             --coverage-xml=coverage/coverage-xml \
             --coverage-html=coverage/html \
             --log-junit=coverage/junit.xml
