@@ -519,6 +519,17 @@ jobs:
       (needs.sonarqube-analysis.result == 'success' || needs.sonarqube-analysis.result == 'skipped')
 
     steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📁 Download coverage results (summary)
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-per-file-report-${{ github.sha }}
+          path: app/
+
       - name: 📋 Create success summary
         uses: actions/github-script@v6
         env:
@@ -573,8 +584,18 @@ jobs:
           echo ""
           echo "This PR is ready for manual review and merge!"
           echo ""
-          echo "Files analyzed: ${{ needs.verify-coverage-per-file.outputs.coverage_summary.analyzedFiles || 'N/A' }}"
-          echo "Overall coverage: ${{ needs.verify-coverage-per-file.outputs.coverage_summary.overallCoverage || 'N/A' }}%"
+
+          # Tenta pegar um resumo real do JSON gerado na validação
+          if [ -f "coverage-per-file-results.json" ]; then
+            FILES_ANALYZED=$(php -r '$j=json_decode(file_get_contents("coverage-per-file-results.json"), true) ?: []; echo $j["summary"]["analyzedFiles"] ?? "N/A";')
+            OVERALL_COV=$(php -r '$j=json_decode(file_get_contents("coverage-per-file-results.json"), true) ?: []; echo $j["summary"]["overallCoverage"] ?? "N/A";')
+          else
+            FILES_ANALYZED="N/A"
+            OVERALL_COV="N/A"
+          fi
+
+          echo "Files analyzed: ${FILES_ANALYZED}"
+          echo "Overall coverage: ${OVERALL_COV}%"
           echo ""
           echo "🚀 Ready to merge! 🚀"
 
