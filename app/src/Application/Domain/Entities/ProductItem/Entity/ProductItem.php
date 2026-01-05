@@ -53,11 +53,11 @@ class ProductItem
 
     public function getProduct(): Product { return $this->product; }
     public function setProduct(Product $product): self { $this->product = $product; return $this; }
-    public function getProductId(): int { return $this->product->getId(); }
+    public function getProductId(): ?int { return $this->product->getId(); }
 
     public function getItem(): Item { return $this->item; }
     public function setItem(Item $item): self { $this->item = $item; return $this; }
-    public function getItemId(): int { return $this->item->getId(); }
+    public function getItemId(): ?int { return $this->item->getId(); }
 
     public function isEssential(): bool { return $this->essential; }
     public function setEssential(bool $essential): self { $this->essential = $essential; return $this; }
