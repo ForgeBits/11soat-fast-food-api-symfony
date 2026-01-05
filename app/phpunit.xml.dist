@@ -31,6 +31,8 @@
             <directory>vendor</directory>
             <directory>var</directory>
             <directory>tests</directory>
+            <!-- Excluir Infrastructure da medição de cobertura -->
+            <directory>src/Infrastructure</directory>
         </exclude>
     </source>
 
