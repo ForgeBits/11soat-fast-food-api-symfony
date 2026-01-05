@@ -33,6 +33,8 @@
             <directory>tests</directory>
             <!-- Excluir Infrastructure da medição de cobertura -->
             <directory>src/Infrastructure</directory>
+            <!-- Excluir Helpers (camada de borda) da medição de cobertura -->
+            <directory>src/Application/Helpers</directory>
         </exclude>
     </source>
 
