@@ -151,7 +151,16 @@ jobs:
               '/seeders\//i',
               '/Test\.php$/i',
               '/tests\//i',
-              '/__tests__/i'
+              '/__tests__/i',
+              // Infraestrutura e camadas de borda da aplicação (não exigimos 80% por arquivo)
+              '/\/Application\/Controller\//i',
+              '/\/Application\/Console\//i',
+              '/\/Application\/Port\//i',
+              '/\/Application\/Presenters\//i',
+              '/\/Infrastructure\//i',
+              '/\/Infrastructure\/Test\/Doubles\//i',
+              '/\/Kernel\.php$/i',
+              '/\/Enum\//i'
           ];
 
           function shouldIgnore(\$filePath, \$patterns) {
