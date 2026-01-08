@@ -8,25 +8,32 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      REMOTE_USER: ubuntu
+      REMOTE_HOST: ec2-54-85-143-71.compute-1.amazonaws.com
+      REMOTE_PATH: ~/11soat-fast-food-api-symfony
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Start ssh-agent and add EC2 key
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.EC2_SSH_KEY }}
+      - name: Write EC2 key to file (fiap.pem)
+        run: |
+          cat > fiap.pem <<'EOF'
+          ${{ secrets.EC2_SSH_KEY }}
+          EOF
+          chmod 600 fiap.pem
 
       - name: Add EC2 host to known_hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ec2-54-85-143-71.compute-1.amazonaws.com >> ~/.ssh/known_hosts
+          ssh-keyscan -H "$REMOTE_HOST" >> ~/.ssh/known_hosts
+
+      - name: Sync code to EC2
+        run: |
+          rsync -az --delete -e "ssh -i fiap.pem -o StrictHostKeyChecking=yes" \
+            ./ "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}"
 
       - name: Deploy via SSH and Docker Compose
-        env:
-          REMOTE_USER: ubuntu
-          REMOTE_HOST: ec2-54-85-143-71.compute-1.amazonaws.com
         run: |
-          ssh -o StrictHostKeyChecking=yes "${REMOTE_USER}@${REMOTE_HOST}" \
-            'cd /11soat-fast-food-api-symfony && docker compose up --build -d -V'
+          ssh -i fiap.pem -o StrictHostKeyChecking=yes "${REMOTE_USER}@${REMOTE_HOST}" \
+            "mkdir -p ${REMOTE_PATH} && cd ${REMOTE_PATH} && docker compose up --build -d -V"
