@@ -383,7 +383,6 @@ jobs:
           args: >
             -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
             -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
-            -Dsonar.projectBaseDir=app
             -Dsonar.php.coverage.reportPaths=coverage/clover.xml
             -Dsonar.php.tests.reportPath=coverage/junit.xml
             -Dsonar.exclusions=src/Application/Http/**
