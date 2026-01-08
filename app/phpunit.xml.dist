@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.4/phpunit.xsd"
+     bootstrap="tests/bootstrap.php"
+     colors="true"
+     cacheDirectory=".phpunit.cache"
+     displayDetailsOnTestsThatTriggerWarnings="true"
+     displayDetailsOnTestsThatTriggerErrors="true"
+     failOnWarning="true"
+     failOnRisky="true"
+>
+    <testsuites>
+        <testsuite name="Project Test Suite">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <coverage>
+        <report>
+            <clover outputFile="coverage/clover.xml"/>
+            <html outputDirectory="coverage/html"/>
+            <xml outputDirectory="coverage/coverage-xml"/>
+        </report>
+    </coverage>
+
+    <source>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+        <exclude>
+            <directory>vendor</directory>
+            <directory>var</directory>
+            <directory>tests</directory>
+            <!-- Excluir Infrastructure da medição de cobertura -->
+            <directory>src/Infrastructure</directory>
+            <!-- Excluir Helpers (camada de borda) da medição de cobertura -->
+            <directory>src/Application/Helpers</directory>
+        </exclude>
+    </source>
+
+    <!-- Logging -->
+    <logging>
+        <junit outputFile="coverage/junit.xml"/>
+    </logging>
+
+    <php>
+        <env name="APP_ENV" value="test" force="true"/>
+        <env name="APP_DEBUG" value="1"/>
+        <server name="KERNEL_CLASS" value="App\Kernel"/>
+    </php>
+</phpunit>
