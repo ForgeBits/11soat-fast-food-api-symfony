@@ -35,6 +35,8 @@
             <directory>src/Infrastructure</directory>
             <!-- Excluir Helpers (camada de borda) da medição de cobertura -->
             <directory>src/Application/Helpers</directory>
+            <!-- Excluir Http (middlewares, listeners, etc.) da medição de cobertura -->
+            <directory>src/Application/Http</directory>
         </exclude>
     </source>
 
