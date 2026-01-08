@@ -36,4 +36,4 @@ jobs:
       - name: Deploy via SSH and Docker Compose
         run: |
           ssh -i fiap.pem -o StrictHostKeyChecking=yes "${REMOTE_USER}@${REMOTE_HOST}" \
-            "mkdir -p ${REMOTE_PATH} && cd ${REMOTE_PATH} && docker compose up --build -d -V"
+            "mkdir -p ${REMOTE_PATH} && cd ${REMOTE_PATH} && git pull && docker compose up --build -d -V"
