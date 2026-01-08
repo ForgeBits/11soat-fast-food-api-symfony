@@ -1,0 +1,32 @@
+name: Deploy to EC2
+
+on:
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Start ssh-agent and add EC2 key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Add EC2 host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ec2-54-85-143-71.compute-1.amazonaws.com >> ~/.ssh/known_hosts
+
+      - name: Deploy via SSH and Docker Compose
+        env:
+          REMOTE_USER: ubuntu
+          REMOTE_HOST: ec2-54-85-143-71.compute-1.amazonaws.com
+        run: |
+          ssh -o StrictHostKeyChecking=yes "${REMOTE_USER}@${REMOTE_HOST}" \
+            'cd /11soat-fast-food-api-symfony && docker compose up --build -d -V'

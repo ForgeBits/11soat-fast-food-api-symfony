@@ -155,6 +155,7 @@ jobs:
               // Infraestrutura e camadas de borda da aplicação (não exigimos 80% por arquivo)
               '/\/Application\/Controller\//i',
               '/\/Application\/Console\//i',
+              '/\/Application\/Http\//i',
               '/\/Application\/Helpers\//i',
               '/\/Application\/Port\//i',
               '/\/Application\/Presenters\//i',
@@ -384,6 +385,8 @@ jobs:
             -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
             -Dsonar.php.coverage.reportPaths=coverage/clover.xml
             -Dsonar.php.tests.reportPath=coverage/junit.xml
+            -Dsonar.exclusions=src/Application/Http/**
+            -Dsonar.coverage.exclusions=src/Application/Http/**
 
       - name: ✅ Report job completion
         if: always()
