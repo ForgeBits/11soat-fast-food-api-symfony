@@ -4,7 +4,7 @@
 [![Symfony](https://img.shields.io/badge/Symfony-API-000000.svg)](https://symfony.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-316192.svg)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](https://www.docker.com/)
-[![Code Coverage](https://img.shields.io/badge/coverage-97.16%25-brightgreen)](https://sonarcloud.io/summary/new_code?id=Luckmenez_11soat-node-orders)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ForgeBits_11soat-fast-food-api-symfony&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ForgeBits_11soat-fast-food-api-symfony)
 
 ## 📋 Descrição
 
