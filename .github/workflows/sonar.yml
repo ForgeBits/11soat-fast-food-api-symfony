@@ -322,8 +322,8 @@ jobs:
         with:
           name: coverage-per-file-report-${{ github.sha }}
           path: |
-            app/coverage/
-            app/coverage-per-file-results.json
+            coverage/
+            coverage-per-file-results.json
           retention-days: 30
 
       - name: ✅ Report job completion
@@ -370,7 +370,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: coverage-per-file-report-${{ github.sha }}
-          path: app/coverage/
+          path: coverage/
 
       - name: 🔍 Run SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@master
@@ -428,7 +428,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const resultsPath = 'app/coverage-per-file-results.json';
+            const resultsPath = 'coverage-per-file-results.json';
 
             let results = { failed: [], summary: {} };
             if (fs.existsSync(resultsPath)) {
@@ -529,7 +529,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: coverage-per-file-report-${{ github.sha }}
-          path: app/
 
       - name: 📋 Create success summary
         uses: actions/github-script@v6
