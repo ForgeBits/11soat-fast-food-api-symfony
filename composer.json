@@ -56,6 +56,7 @@
     "scripts": {
         "test:coverage": "phpunit --coverage-html coverage/html",
         "test:coverage-clover": "phpunit --coverage-clover coverage/clover.xml",
+        "bdd": "vendor/bin/behat -c behat.yml",
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd"
@@ -77,10 +78,11 @@
         }
     },
     "require-dev": {
+        "behat/behat": "*",
         "phpunit/phpunit": "*",
-        "symfony/maker-bundle": "^1.64",
         "symfony/browser-kit": "7.3.*",
+        "symfony/css-selector": "7.3.*",
         "symfony/dom-crawler": "7.3.*",
-        "symfony/css-selector": "7.3.*"
+        "symfony/maker-bundle": "^1.64"
     }
 }

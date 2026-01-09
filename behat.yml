@@ -1,0 +1,11 @@
+default:
+  suites:
+    api:
+      paths:
+        - tests/e2e/features
+      contexts:
+        - App\Tests\E2E\Context\ApiContext: { base_url: 'http://web' }
+
+  gherkin:
+    filters:
+      tags: "~@wip"

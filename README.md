@@ -103,6 +103,50 @@ Os controladores utilizam `#[Route]` com prefixos sob `/api`. A documentação S
 
 ---
 
+## 🧪 BDD (Behat) — Equivalente ao Jest+Cucumber
+
+Este projeto inclui testes BDD usando Behat (Gherkin), espelhando a estrutura do exemplo em Node (Jest+Cucumber):
+
+```
+tests/
+  e2e/
+    features/
+      create-order.feature
+      get-orders-paginated.feature
+      update-order-payment.feature
+  E2E/
+    Context/
+      ApiContext.php
+behat.yml
+.env.behat
+```
+
+### Instalar dependências
+Dentro do container `app`:
+
+```bash
+docker compose exec app composer install
+```
+
+### Executar os cenários BDD
+
+```bash
+# URL padrão configurada em .env.behat (BASE_URL=http://localhost:8084)
+docker compose exec app composer bdd
+
+# ou diretamente
+docker compose exec app vendor/bin/behat -c behat.yml
+```
+
+### Como funciona
+- Os arquivos `.feature` descrevem os cenários (Gherkin) para a API de Pedidos.
+- O `ApiContext.php` implementa passos genéricos: definir headers, enviar `GET/POST/PATCH`, validar status e campos do JSON.
+- Você pode ajustar a `BASE_URL` no arquivo `.env.behat` se precisar.
+
+> Dica: use o passo `Then print last response` para depurar rapidamente a resposta da API.
+
+---
+
 ## 🏗️ Arquitetura
 
 Estrutura baseada em princípios de separação de camadas e portas/adaptadores:

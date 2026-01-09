@@ -105,16 +105,15 @@ class OrderController extends AbstractController
 
             $dto = new CreateOrderDto();
             $dto->clientId = isset($payload['clientId']) ? (int)$payload['clientId'] : null;
-            $dto->status = OrderStatus::PENDING; // status inicial
+            $dto->status = OrderStatus::PENDING;
             $dto->amount = (float)($payload['amount'] ?? 0);
             $dto->transactionId = $payload['transactionId'] ?? null;
             $dto->isRandomClient = (bool)($payload['isRandomClient'] ?? false);
             $dto->codeClientRandom = isset($payload['codeClientRandom']) ? (int)$payload['codeClientRandom'] : null;
             $dto->observation = $payload['observation'] ?? null;
 
-            $dto->productIds = []; // legado não usado neste fluxo
+            $dto->productIds = [];
 
-            // map items
             $dto->items = [];
             foreach (($payload['items'] ?? []) as $it) {
                 $itDto = new CreateOrderItemDto();
@@ -155,6 +154,7 @@ class OrderController extends AbstractController
         } catch (HttpExceptionInterface $e) {
             return ApiResponse::error(message: $e->getMessage(), code: $e->getStatusCode());
         } catch (\Throwable $e) {
+            dd($e);
             return ApiResponse::error('Internal server error: ' . $e->getMessage());
         }
     }

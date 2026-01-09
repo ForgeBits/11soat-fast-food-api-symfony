@@ -8,7 +8,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 class CreateOrderDto
 {
     #[Assert\Positive]
-    #[Assert\Optional]
     public ?int $clientId = null;
 
     #[Assert\NotNull]
@@ -30,18 +29,12 @@ class CreateOrderDto
     #[Assert\NotNull]
     public bool $isRandomClient = false;
 
-    #[Assert\Optional]
     #[Assert\Positive]
     public ?int $codeClientRandom = null;
 
-    #[Assert\Optional]
     #[Assert\Length(max: 5000)]
     public ?string $observation = null;
 
-    /**
-     * Itens do pedido com personalizações do cliente
-     * @var CreateOrderItemDto[]
-     */
     #[Assert\Type('array')]
     public array $items = [];
 }
