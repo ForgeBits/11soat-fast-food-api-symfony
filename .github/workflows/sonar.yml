@@ -382,7 +382,6 @@ jobs:
             -Dsonar.sources=src
             -Dsonar.php.coverage.reportPaths=coverage/clover.xml
             -Dsonar.php.tests.reportPath=coverage/junit.xml
-            -Dsonar.working.directory=.
             -Dsonar.exclusions=src/Application/Http/**
             -Dsonar.coverage.exclusions=src/Application/Http/**
 
