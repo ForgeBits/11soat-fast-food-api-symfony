@@ -48,16 +48,14 @@ jobs:
       - name: 🧪 Run PHPUnit tests with coverage
         id: run-tests
         run: |
-          echo "Running PHPUnit tests with coverage..."
-          XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text
+          mkdir -p coverage  # Garante que a pasta existe
+          XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover coverage/clover.xml
 
           # Verifica se o clover.xml foi gerado
           if [ -f "coverage/clover.xml" ]; then
             echo "✅ clover.xml generated successfully"
-            echo "File size: $(wc -l < coverage/clover.xml) lines"
           else
             echo "❌ ERROR: clover.xml not generated!"
-            ls -la coverage/ 2>/dev/null || echo "No coverage directory"
             exit 1
           fi
 
@@ -381,8 +379,10 @@ jobs:
           args: >
             -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
             -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+            -Dsonar.sources=src
             -Dsonar.php.coverage.reportPaths=coverage/clover.xml
             -Dsonar.php.tests.reportPath=coverage/junit.xml
+            -Dsonar.working.directory=.
             -Dsonar.exclusions=src/Application/Http/**
             -Dsonar.coverage.exclusions=src/Application/Http/**
 
