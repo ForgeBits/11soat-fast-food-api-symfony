@@ -11,10 +11,8 @@ services:
     environment:
       APP_ENV: dev
       DATABASE_URL: "postgresql://symfony:symfony@db:5432/producao?serverVersion=16&charset=utf8"
-      MESSENGER_TRANSPORT_DSN: "amqp://symfony:symfony@rabbit:5672/%2f/messages"
     depends_on:
       - db
-      - rabbit
 
   web:
     image: nginx:1.27-alpine
@@ -39,40 +37,5 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
-  rabbit:
-    image: rabbitmq:3.13-management
-    container_name: producao_rabbit
-    environment:
-      RABBITMQ_DEFAULT_USER: symfony
-      RABBITMQ_DEFAULT_PASS: symfony
-      RABBITMQ_DEFAULT_VHOST: "/"
-    ports:
-      - "5673:5672"
-      - "15673:15672"
-    volumes:
-      - rabbit_data:/var/lib/rabbitmq
-
-  worker:
-    build:
-      context: ./docker/php
-    container_name: producao_worker
-    working_dir: /var/www/html
-    volumes:
-      - ./app:/var/www/html
-    environment:
-      APP_ENV: dev
-      DATABASE_URL: "postgresql://symfony:symfony@db:5432/producao?serverVersion=16&charset=utf8"
-      MESSENGER_TRANSPORT_DSN: "amqp://symfony:symfony@rabbit:5672/%2f/messages"
-    depends_on:
-      - app
-      - rabbit
-    command: >
-      bash -lc "php bin/console messenger:consume async
-                --time-limit=3600
-                --memory-limit=256M
-                --limit=0
-                -vv"
-
 volumes:
   db_data:
-  rabbit_data:
