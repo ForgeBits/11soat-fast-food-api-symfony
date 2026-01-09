@@ -12,10 +12,6 @@ permissions:
   issues: write
   checks: write
 
-defaults:
-  run:
-    working-directory: app
-
 env:
   MIN_COVERAGE: 80
   IGNORE_PATTERNS: "**/*DTO.php,**/*Enum.php,**/ValueObjects/**,**/*Interface.php,**/public/index.php,**/config/**,**/database/migrations/**,**/database/seeders/**"
@@ -212,7 +208,7 @@ jobs:
 
               \$elements = (int)\$metrics['elements'];
               \$coveredelements = (int)\$metrics['coveredelements'];
-              
+
               \$totalElements += \$elements;
               \$coveredElements += \$coveredelements;
 
@@ -238,8 +234,8 @@ jobs:
           }
 
           // Calcular cobertura geral
-          \$results['summary']['overallCoverage'] = \$totalElements > 0 
-              ? round((\$coveredElements / \$totalElements) * 100, 2) 
+          \$results['summary']['overallCoverage'] = \$totalElements > 0
+              ? round((\$coveredElements / \$totalElements) * 100, 2)
               : 0;
 
           // 4. RELATÓRIO DETALHADO
@@ -281,7 +277,7 @@ jobs:
               // Definir outputs do GitHub Actions
               file_put_contents(getenv('GITHUB_OUTPUT'), 'passed=false' . PHP_EOL, FILE_APPEND);
               file_put_contents(getenv('GITHUB_OUTPUT'), 'failed_count=' . count(\$results['failed']) . PHP_EOL, FILE_APPEND);
-              
+
               exit(1);
           } else {
               echo PHP_EOL . '✅✅✅ VALIDAÇÃO PASSOU! ✅✅✅' . PHP_EOL;
@@ -315,7 +311,7 @@ jobs:
               // Definir outputs do GitHub Actions
               file_put_contents(getenv('GITHUB_OUTPUT'), 'passed=true' . PHP_EOL, FILE_APPEND);
               file_put_contents(getenv('GITHUB_OUTPUT'), 'failed_count=0' . PHP_EOL, FILE_APPEND);
-              
+
               exit(0);
           }
           "
@@ -410,7 +406,7 @@ jobs:
       checks: write
 
     if: |
-      github.event_name == 'pull_request' && 
+      github.event_name == 'pull_request' &&
       needs.verify-coverage-per-file.outputs.coverage_passed == 'false'
 
     steps:
@@ -433,7 +429,7 @@ jobs:
           script: |
             const fs = require('fs');
             const resultsPath = 'app/coverage-per-file-results.json';
-            
+
             let results = { failed: [], summary: {} };
             if (fs.existsSync(resultsPath)) {
               results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
@@ -444,7 +440,7 @@ jobs:
 
             let filesList = '';
             if (failedFiles.length > 0) {
-              filesList = failedFiles.map(file => 
+              filesList = failedFiles.map(file =>
                 `- ❌ \`${file.file}\` → **${file.coverage}%** (mínimo: 80%)`
               ).join('\n');
             }
