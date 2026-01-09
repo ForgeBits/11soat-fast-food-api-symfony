@@ -368,7 +368,27 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: coverage-per-file-report-${{ github.sha }}
-          path: coverage/
+          # Baixa na raiz do workspace para manter o caminho exatamente como no artefato:
+          # coverage/clover.xml e coverage/junit.xml (evita coverage/coverage/clover.xml)
+          path: .
+
+      - name: ✅ Verificar se os relatórios de coverage existem
+        run: |
+          echo "📂 Conteúdo da pasta coverage/ (se existir):"
+          ls -la coverage || true
+
+          if [ ! -f "coverage/clover.xml" ]; then
+            echo "❌ NÃO ENCONTREI coverage/clover.xml. Provável problema no download do artefato ou no upload."
+            echo "🧭 Dica: se existir coverage/coverage/clover.xml, seu download está criando pasta duplicada."
+            exit 1
+          fi
+
+          if [ ! -f "coverage/junit.xml" ]; then
+            echo "❌ NÃO ENCONTREI coverage/junit.xml."
+            exit 1
+          fi
+
+          echo "✅ Relatórios encontrados: coverage/clover.xml e coverage/junit.xml"
 
       - name: 🔍 Run SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@master
