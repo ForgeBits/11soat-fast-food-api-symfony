@@ -395,15 +395,6 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-          args: >
-            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
-            -Dsonar.sources=src
-            -Dsonar.php.coverage.reportPaths=coverage/clover.xml
-            -Dsonar.php.tests.reportPath=coverage/junit.xml
-            -Dsonar.exclusions=src/Application/Http/**
-            -Dsonar.coverage.exclusions=src/Application/Http/**
 
       - name: ✅ Report job completion
         if: always()
