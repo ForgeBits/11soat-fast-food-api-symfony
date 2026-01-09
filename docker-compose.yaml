@@ -7,7 +7,7 @@ services:
     container_name: producao_app
     working_dir: /var/www/html
     volumes:
-      - ./app:/var/www/html
+      - .:/var/www/html
     environment:
       APP_ENV: dev
       DATABASE_URL: "postgresql://symfony:symfony@db:5432/producao?serverVersion=16&charset=utf8"
@@ -22,7 +22,7 @@ services:
     ports:
       - "8084:80"
     volumes:
-      - ./app/public:/var/www/html/public:ro
+      - ./public:/var/www/html/public:ro
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
 
   db:
