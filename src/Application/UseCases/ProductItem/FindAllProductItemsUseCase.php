@@ -7,6 +7,7 @@ use App\Application\Port\Output\Repositories\ProductItemRepositoryPort;
 
 readonly class FindAllProductItemsUseCase
 {
+    // Use case para buscar todas as relações Produto-Item com paginação
     public function __construct(
         private ProductItemRepositoryPort $repository,
     ) {
