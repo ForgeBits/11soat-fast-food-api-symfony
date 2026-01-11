@@ -391,10 +391,6 @@ jobs:
           echo "✅ Relatórios encontrados: coverage/clover.xml e coverage/junit.xml"
 
       - name: 🔍 Run SonarQube Scan
-        permissions:
-            contents: read
-            pull-requests: write
-            checks: write
         uses: SonarSource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
