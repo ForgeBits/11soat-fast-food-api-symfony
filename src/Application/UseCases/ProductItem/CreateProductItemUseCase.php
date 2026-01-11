@@ -10,6 +10,7 @@ use App\Application\Port\Output\Repositories\ProductRepositoryPort;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+// Use case para criar uma relação entre Produto e Item
 readonly class CreateProductItemUseCase
 {
     public function __construct(
