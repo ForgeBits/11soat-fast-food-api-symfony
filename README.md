@@ -310,9 +310,10 @@ Projeto acadêmico FIAP – uso educacional.
 - [x] Testes unitários (PHPUnit)
 - [x] Docker (Nginx, PHP-FPM, PostgreSQL)
 - [x] Anotações OpenAPI (Nelmio)
-- [ ] Pipeline CI/CD e Sonar integrados
-- [ ] Documentação completa de todos os endpoints
+- [x] Pipeline CI/CD e Sonar integrados
+- [x] Documentação completa de todos os endpoints
 
 ---
 
-Desenvolvido com ❤️
+ ***Collections para testes*: [Collection Auth](https://drive.google.com/file/d/1ObKUIOWGA5VkhCKXs_vSFjh_Aq-NhTzg/view?usp=drive_link)
+
