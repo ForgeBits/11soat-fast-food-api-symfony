@@ -37,6 +37,8 @@
             <directory>src/Application/Helpers</directory>
             <!-- Excluir Http (middlewares, listeners, etc.) da medição de cobertura -->
             <directory>src/Application/Http</directory>
+            <!-- Excluir Kernel.php da medição de cobertura para evitar aviso no Sonar -->
+            <file>src/Kernel.php</file>
         </exclude>
     </source>
 
