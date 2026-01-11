@@ -1,18 +1,16 @@
 name: SonarQube Analysis - 80% Coverage per File (PHP)
 
 on:
+  push:
+    branches: [develop, main]
   pull_request:
-    branches: [main, master]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
   pull-requests: write
   issues: write
   checks: write
-
-defaults:
-  run:
-    working-directory: app
 
 env:
   MIN_COVERAGE: 80
@@ -50,16 +48,14 @@ jobs:
       - name: 🧪 Run PHPUnit tests with coverage
         id: run-tests
         run: |
-          echo "Running PHPUnit tests with coverage..."
-          XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text
+          mkdir -p coverage  # Garante que a pasta existe
+          XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover coverage/clover.xml
 
           # Verifica se o clover.xml foi gerado
           if [ -f "coverage/clover.xml" ]; then
             echo "✅ clover.xml generated successfully"
-            echo "File size: $(wc -l < coverage/clover.xml) lines"
           else
             echo "❌ ERROR: clover.xml not generated!"
-            ls -la coverage/ 2>/dev/null || echo "No coverage directory"
             exit 1
           fi
 
@@ -210,7 +206,7 @@ jobs:
 
               \$elements = (int)\$metrics['elements'];
               \$coveredelements = (int)\$metrics['coveredelements'];
-              
+
               \$totalElements += \$elements;
               \$coveredElements += \$coveredelements;
 
@@ -236,8 +232,8 @@ jobs:
           }
 
           // Calcular cobertura geral
-          \$results['summary']['overallCoverage'] = \$totalElements > 0 
-              ? round((\$coveredElements / \$totalElements) * 100, 2) 
+          \$results['summary']['overallCoverage'] = \$totalElements > 0
+              ? round((\$coveredElements / \$totalElements) * 100, 2)
               : 0;
 
           // 4. RELATÓRIO DETALHADO
@@ -279,7 +275,7 @@ jobs:
               // Definir outputs do GitHub Actions
               file_put_contents(getenv('GITHUB_OUTPUT'), 'passed=false' . PHP_EOL, FILE_APPEND);
               file_put_contents(getenv('GITHUB_OUTPUT'), 'failed_count=' . count(\$results['failed']) . PHP_EOL, FILE_APPEND);
-              
+
               exit(1);
           } else {
               echo PHP_EOL . '✅✅✅ VALIDAÇÃO PASSOU! ✅✅✅' . PHP_EOL;
@@ -313,7 +309,7 @@ jobs:
               // Definir outputs do GitHub Actions
               file_put_contents(getenv('GITHUB_OUTPUT'), 'passed=true' . PHP_EOL, FILE_APPEND);
               file_put_contents(getenv('GITHUB_OUTPUT'), 'failed_count=0' . PHP_EOL, FILE_APPEND);
-              
+
               exit(0);
           }
           "
@@ -324,8 +320,8 @@ jobs:
         with:
           name: coverage-per-file-report-${{ github.sha }}
           path: |
-            app/coverage/
-            app/coverage-per-file-results.json
+            coverage/
+            coverage-per-file-results.json
           retention-days: 30
 
       - name: ✅ Report job completion
@@ -372,21 +368,37 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: coverage-per-file-report-${{ github.sha }}
-          path: app/coverage/
+          # Baixa na raiz do workspace para manter o caminho exatamente como no artefato:
+          # coverage/clover.xml e coverage/junit.xml (evita coverage/coverage/clover.xml)
+          path: .
+
+      - name: ✅ Verificar se os relatórios de coverage existem
+        run: |
+          echo "📂 Conteúdo da pasta coverage/ (se existir):"
+          ls -la coverage || true
+
+          if [ ! -f "coverage/clover.xml" ]; then
+            echo "❌ NÃO ENCONTREI coverage/clover.xml. Provável problema no download do artefato ou no upload."
+            echo "🧭 Dica: se existir coverage/coverage/clover.xml, seu download está criando pasta duplicada."
+            exit 1
+          fi
+
+          if [ ! -f "coverage/junit.xml" ]; then
+            echo "❌ NÃO ENCONTREI coverage/junit.xml."
+            exit 1
+          fi
+
+          echo "✅ Relatórios encontrados: coverage/clover.xml e coverage/junit.xml"
 
       - name: 🔍 Run SonarQube Scan
+        permissions:
+            contents: read
+            pull-requests: write
+            checks: write
         uses: SonarSource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        with:
-          args: >
-            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
-            -Dsonar.php.coverage.reportPaths=coverage/clover.xml
-            -Dsonar.php.tests.reportPath=coverage/junit.xml
-            -Dsonar.exclusions=src/Application/Http/**
-            -Dsonar.coverage.exclusions=src/Application/Http/**
 
       - name: ✅ Report job completion
         if: always()
@@ -408,7 +420,7 @@ jobs:
       checks: write
 
     if: |
-      github.event_name == 'pull_request' && 
+      github.event_name == 'pull_request' &&
       needs.verify-coverage-per-file.outputs.coverage_passed == 'false'
 
     steps:
@@ -430,8 +442,8 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const resultsPath = 'app/coverage-per-file-results.json';
-            
+            const resultsPath = 'coverage-per-file-results.json';
+
             let results = { failed: [], summary: {} };
             if (fs.existsSync(resultsPath)) {
               results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
@@ -442,7 +454,7 @@ jobs:
 
             let filesList = '';
             if (failedFiles.length > 0) {
-              filesList = failedFiles.map(file => 
+              filesList = failedFiles.map(file =>
                 `- ❌ \`${file.file}\` → **${file.coverage}%** (mínimo: 80%)`
               ).join('\n');
             }
@@ -531,7 +543,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: coverage-per-file-report-${{ github.sha }}
-          path: app/
 
       - name: 📋 Create success summary
         uses: actions/github-script@v6
