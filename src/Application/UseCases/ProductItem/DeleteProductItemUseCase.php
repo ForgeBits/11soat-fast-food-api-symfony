@@ -5,6 +5,7 @@ namespace App\Application\UseCases\ProductItem;
 use App\Application\Port\Output\Repositories\ProductItemRepositoryPort;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+// Use case para deletar uma relação Produto-Item
 readonly class DeleteProductItemUseCase
 {
     public function __construct(
