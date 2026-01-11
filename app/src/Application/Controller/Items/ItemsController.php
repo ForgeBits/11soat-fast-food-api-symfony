@@ -57,7 +57,7 @@ class ItemsController extends AbstractController
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Item criado com sucesso',
+                description: 'Item criado com sucesso: ',
                 content: new OA\MediaType(
                     mediaType: 'application/json',
                     schema: new OA\Schema(
@@ -82,7 +82,7 @@ class ItemsController extends AbstractController
                     )
                 )
             ),
-            new OA\Response(response: 400, description: 'Payload inválido'),
+            new OA\Response(response: 400, description: 'Payload inválido: '),
             new OA\Response(response: 500, description: 'Erro interno do servidor')
         ]
     )]
@@ -121,7 +121,7 @@ class ItemsController extends AbstractController
     #[Route('', methods: ['GET'])]
     #[OA\Get(
         path: '/api/items',
-        summary: 'Lista itens com paginação',
+        summary: 'Lista itens com paginação: ',
         tags: ['Items'],
         parameters: [
             new OA\Parameter(name: 'page', description: 'Número da página', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 1, minimum: 1)),
