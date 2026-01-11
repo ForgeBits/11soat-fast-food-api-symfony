@@ -4,8 +4,6 @@ namespace App\Application\UseCases\Orders;
 
 use App\Application\Domain\Dtos\Orders\CreateOrderDto;
 use App\Application\Domain\Entities\Orders\Entity\Order;
-use App\Application\Domain\Entities\Orders\Entity\OrderItem;
-use App\Application\Domain\Entities\Orders\Entity\OrderItemCustomization;
 use App\Application\Port\Output\Repositories\ItemRepositoryPort;
 use App\Application\Port\Output\Repositories\OrderRepositoryPort;
 use App\Application\Port\Output\Repositories\ProductItemRepositoryPort;

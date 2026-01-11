@@ -154,7 +154,6 @@ class OrderController extends AbstractController
         } catch (HttpExceptionInterface $e) {
             return ApiResponse::error(message: $e->getMessage(), code: $e->getStatusCode());
         } catch (\Throwable $e) {
-            dd($e);
             return ApiResponse::error('Internal server error: ' . $e->getMessage());
         }
     }
