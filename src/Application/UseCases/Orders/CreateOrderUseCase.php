@@ -25,7 +25,6 @@ readonly class CreateOrderUseCase
 
     public function execute(CreateOrderDto $dto): Order
     {
-        // Basic quantities validation
         foreach ($dto->items as $idx => $itemDto) {
             if ($itemDto->quantity <= 0) {
                 throw new BadRequestHttpException("Quantidade inválida para item #$idx");
@@ -37,7 +36,6 @@ readonly class CreateOrderUseCase
             }
         }
 
-        // Domain validations for customization rules
         foreach ($dto->items as $itemDto) {
             $product = $this->productRepository->findById($itemDto->productId);
             if (!$product) {
@@ -48,7 +46,6 @@ readonly class CreateOrderUseCase
                 throw new BadRequestHttpException('Produto não permite customização.');
             }
 
-            // Validate each customer item is allowed
             foreach ($itemDto->customerItems as $cDto) {
                 $item = $this->itemRepository->findById($cDto->itemId);
                 if (!$item) {
@@ -63,9 +60,6 @@ readonly class CreateOrderUseCase
                 }
             }
         }
-
-        // Persist using repository
-        // The repository will map and persist items & customizations
         return $this->orderRepository->create($dto);
     }
 }

@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
-#[AsEventListener(event: KernelEvents::REQUEST, priority: 8)]
+//#[AsEventListener(event: KernelEvents::REQUEST, priority: 8)]
 class AuthValidationListener
 {
     private string $validateUrl;
@@ -24,6 +24,8 @@ class AuthValidationListener
         }
 
         $request = $event->getRequest();
+
+        dd($this);
 
         $path = $request->getPathInfo() ?? '';
         if (!str_starts_with($path, '/api')) {

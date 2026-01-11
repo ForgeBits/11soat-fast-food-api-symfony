@@ -18,7 +18,7 @@ readonly class DeleteCategorytUseCase
         $category = $this->categoryRepository->findById($id);
 
         if (!$category) {
-            throw new NotFoundHttpException('Category not found');
+            throw new NotFoundHttpException('Category not found.');
         }
 
         $this->categoryRepository->delete($category);
