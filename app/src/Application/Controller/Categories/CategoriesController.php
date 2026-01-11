@@ -288,7 +288,7 @@ class CategoriesController extends AbstractController
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Categoria atualizada com sucesso',
+                description: 'Categoria atualizada com sucesso: ',
                 content: new OA\MediaType(
                     mediaType: 'application/json',
                     schema: new OA\Schema(
@@ -312,7 +312,7 @@ class CategoriesController extends AbstractController
             ),
             new OA\Response(
                 response: 400,
-                description: 'Payload inválido (erros de validação)',
+                description: 'Payload inválido (erros de validação): ',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'errors', type: 'string', example: 'name: This value should not be blank.'),
