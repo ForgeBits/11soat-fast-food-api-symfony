@@ -2,7 +2,7 @@ name: SonarQube Analysis - 80% Coverage per File (PHP)
 
 on:
   push:
-    branches: [develop, main]
+    branches: [main]
   pull_request:
     types: [opened, synchronize, reopened]
 
