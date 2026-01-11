@@ -92,7 +92,7 @@ class CategoriesController extends AbstractController
                     properties: [
                         new OA\Property(property: 'status', type: 'string', example: 'error'),
                         new OA\Property(property: 'code', type: 'integer', example: 500),
-                        new OA\Property(property: 'message', type: 'string', example: 'Internal server error: ...'),
+                        new OA\Property(property: 'message', type: 'string', example: '  Internal server error: ...'),
                         new OA\Property(property: 'errors', type: 'array', items: new OA\Items(type: 'string')),
                     ],
                     type: 'object'
@@ -120,7 +120,7 @@ class CategoriesController extends AbstractController
 
             return ApiResponse::success(CategoryPresenter::toResponse($category));
         } catch (\Throwable $e) {
-            return ApiResponse::error('Internal server error: ' . $e->getMessage());
+            return ApiResponse::error('  Internal server error: ' . $e->getMessage());
         }
     }
 
@@ -196,7 +196,7 @@ class CategoriesController extends AbstractController
 
             return ApiResponse::success(PaginatorPresenter::toResponse($pagination, $items));
         } catch (\Throwable $e) {
-            return ApiResponse::error('Internal server error: ' . $e->getMessage());
+            return ApiResponse::error('  Internal server error: ' . $e->getMessage());
         }
     }
 
@@ -258,7 +258,7 @@ class CategoriesController extends AbstractController
                 code: 404
             );
         } catch (\Throwable $e) {
-            return ApiResponse::error('Internal server error: ' . $e->getMessage());
+            return ApiResponse::error('   Internal server error: ' . $e->getMessage());
         }
     }
 
@@ -279,7 +279,7 @@ class CategoriesController extends AbstractController
         parameters: [
             new OA\Parameter(
                 name: 'id',
-                description: 'ID da categoria',
+                description: 'ID da categoria:',
                 in: 'path',
                 required: true,
                 schema: new OA\Schema(type: 'integer'),
@@ -350,7 +350,7 @@ class CategoriesController extends AbstractController
         } catch (NotFoundHttpException|ConflictHttpException $e) {
             return ApiResponse::error($e->getMessage());
         } catch (\Throwable $e) {
-            return ApiResponse::error('Internal server error: ' . $e->getMessage());
+            return ApiResponse::error('  Internal server error: ' . $e->getMessage());
         }
     }
 
@@ -417,7 +417,7 @@ class CategoriesController extends AbstractController
                 code: 404
             );
         } catch (\Throwable $e) {
-            return ApiResponse::error('Internal server error: ' . $e->getMessage());
+            return ApiResponse::error('  Internal server error: ' . $e->getMessage());
         }
     }
 }
