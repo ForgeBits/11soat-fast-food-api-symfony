@@ -1,39 +1,39 @@
 name: Deploy to EC2
 
 on:
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
+    push:
+        branches: [main] # O deploy geralmente ocorre no push para a main após o merge
+    workflow_dispatch:
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    env:
-      REMOTE_USER: ubuntu
-      REMOTE_HOST: ec2-54-85-143-71.compute-1.amazonaws.com
-      REMOTE_PATH: ~/11soat-fast-food-api-symfony
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    deploy:
+        runs-on: ubuntu-latest
+        env:
+            REMOTE_USER: ubuntu
+            REMOTE_HOST: ec2-54-85-143-71.compute-1.amazonaws.com
+            REMOTE_PATH: ~/11soat-fast-food-api-symfony
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-      - name: Write EC2 key to file (fiap.pem)
-        run: |
-          cat > fiap.pem <<'EOF'
-          ${{ secrets.EC2_SSH_KEY }}
-          EOF
-          chmod 600 fiap.pem
+            - name: Write EC2 key to file
+              run: |
+                  echo "${{ secrets.EC2_SSH_KEY }}" > fiap.pem
+                  chmod 600 fiap.pem
 
-      - name: Add EC2 host to known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H "$REMOTE_HOST" >> ~/.ssh/known_hosts
+            - name: Add EC2 host to known_hosts
+              run: |
+                  mkdir -p ~/.ssh
+                  ssh-keyscan -H "$REMOTE_HOST" >> ~/.ssh/known_hosts
 
-      - name: Sync code to EC2
-        run: |
-          rsync -az --delete -e "ssh -i fiap.pem -o StrictHostKeyChecking=yes" \
-            ./ "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}"
+            - name: Sync code to EC2 (Limpo)
+              run: |
+                  # O rsync envia o código atual do GitHub para a EC2
+                  # Excluímos a pasta .git para evitar conflitos de histórico no servidor
+                  rsync -az --delete --exclude '.git' -e "ssh -i fiap.pem" \
+                    ./ "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}"
 
-      - name: Deploy via SSH and Docker Compose
-        run: |
-          ssh -i fiap.pem -o StrictHostKeyChecking=yes "${REMOTE_USER}@${REMOTE_HOST}" \
-            "cd ${REMOTE_PATH} && git pull origin main && docker compose up --build -d -V"
+            - name: Deploy via Docker Compose
+              run: |
+                  ssh -i fiap.pem "${REMOTE_USER}@${REMOTE_HOST}" \
+                    "cd ${REMOTE_PATH} && docker compose up --build -d"
